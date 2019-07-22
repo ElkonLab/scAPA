@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "library(data.table)\nhg19.introns <- fread(\"/home/elkon/eldadshulman/scAPAscript/data/Hg19_intron.bed\", data.table = F)\n\nusethis::use_data(hg19.introns,overwrite = T)\n\nmm10.introns <- fread(\"/home/elkon/eldadshulman/scAPAscript/data/Mm10_intron.bed\", data.table = F)\n\nusethis::use_data(mm10.introns,overwrite = T)\n\nmm10.utr <- fread(\"/home/elkon/eldadshulman/scAPAscript/data/threeprimeUTRs_mm10_M18.bed\", data.table = F)\nusethis::use_data(mm10.utr,overwrite = T)\nhg19.utr <- readRDS(\"/home/elkon/eldadshulman/rpackeges/scAPA/data/hg19.UTRs.bed.RDS\")\nusethis::use_data(hg19.utr, overwrite = T)\n",
+    "created" : 1562758198717.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3582710975",
+    "id" : "2AA4745A",
+    "lastKnownWriteTime" : 1562759010,
+    "last_content_update" : 1562759011004,
+    "path" : "/specific/netapp5_2/elkon/eldadshulman/saveingfiles.r",
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "setwd(\"/home/elkon/eldadshulman/datasets/Eldad/APA/lung_carcinom/mclust/int\")\nbedtools.path = \"\"\nlibrary(Rsubread)\n merge_peaks(bedtools.path = bedtools.path,\n             peaks.file = \"../../sample_3_5/peaks\", path = \"./\")\n int.peaks.bed <- intersect_peaks(org = \"Hs\", bed.name = \"./merge.peakfile.bed\",\n                              path = \"\", bedtools.path = bedtools.path,\n                              introns = T)\nint.peaks.bed  <- as.data.frame(int.peaks.bed)\n int.saf <- int.peaks.bed[,c(4,1,2,3,6)]\n colnames(int.saf) <- c(\"GeneID\", \"Chr\",\t\"Start\",\"End\",\"Strand\")\n# Read Counts -------------------------------------------------------------\nbam.cluster.files <- c(\"/home/elkon/eldadshulman/aparevision/ChangePoint/LungL/dedup.sample3_Alveolar_allsamples.bam\",\n                       \"/home/elkon/eldadshulman/aparevision/ChangePoint/LungL/dedup.sample3_tumor.bam\")\n\ncounts_int <- featureCounts(files = bam.cluster.files ,isGTFAnnotationFile = F,\n                            annot.ext = int.saf, largestOverlap = T, nthreads = 30)\nco_int <- cbind.data.frame(rownames(counts_int$counts), counts_int$counts)\ncolnames(co_int) <- c(\"Peak_ID\", \"Alveolar\", \"Cancer\")\nmeta_int <- counts_int$annotation\nmeta_int <- meta_int[,c(2,3,4,1,6,5)]\nfasta = \"/specific/netapp5_2/elkon/Bowtie2_indexes/Hs/hg19/hg19.fa\"\nchar.length = \"/home/elkon/Bowtie2_indexes/Hs/hg19/hg19_CHR_LENs.txt\"\nmetadata_int <- read_down.seq(saf = int.saf,\n                              char.length.path = char.length,\n                              fasta.path = fasta,\n                              chr.modify = T)\naseq_int <- metadata_int[,c(4,6)]\na.int <- set_scAPAList(.clus.counts = co_int, .row.Data = meta_int, .down.seq = aseq_int)\nsaveRDS(object = a.int , file = \"a.int.RDS\")\na.int <- readRDS(\"a.int.RDS\")\na.int <- calc_cpm(a.int)\nhas.Aseq <- find_internal_prim_seq(x = a.int, int.priming.seq = \"AAAAAA\",\n                                   left = 10,\n                                   right = 140)\nkeep.int.pr <- as.vector(has.Aseq[which(has.Aseq$has_seq == F),1])\n\n\n\n\nr <- set_scAPAreasults(a.int, int = T, cpm = 10)\nsaveRDS(\"r_intron.RDS\", object = r)\nbed <- r@metadata\n\nbed$Chr <- ifelse(bed$Chr == \"MT\", \"M\", paste0(\"chr\", bed$Chr))\ncolnames(bed) <- paste0(\"V\", 1:6)\nbed$V3 <- as.numeric(bed$V3)\nbed$V2 <- as.numeric(bed$V2)\nbed <- peakedge(bed)\nbed <- bed[-2782,]\nbed <- merge(bed, a.int@clus.counts, by.x = \"V4\", by.y = \"Peak_ID\")\nbed$sum <-  bed$Alveolar + bed$Cancer\nbed <- bed[,c(2,3,4,1,9,6)]\n\nwrite.bed(.x = bed, f = \"Introns.bed\")\nr <- r[names(r@utrs.clus.counts) %in% keep.int.pr]\nr <- test_APA(r)\nr <- calc_p_pui_mat(r)\nsig <- r[r@pvalues$all[,2] < 0.05,]\nsaveRDS(\"sig_intron.RDS\", object = sig)\nsum(sig@ppui.clus[,1] < sig@ppui.clus[,2], na.rm = T)\n\n\n\n\n\nkeep.cpm <- rowSums(a@norm$CPM) > 10\na.fil <- a[keep.cpm,]\nhas.Aseq <- find_internal_prim_seq(x = a.fil, int.priming.seq = \"AAAAAAAA\",\n                                   left = 10,\n                                   right = 140)\nkeep.int.pr <- as.vector(!has.Aseq[,2])\n\na.fil <-a.fil[which(keep.int.pr),]\n\nreasults <- set_scAPAreasults(a.fil)\nreasults <- test_APA(reasults)\nreasults <- calc_pAi_mat(reasults)\nreasults <- calc_p_pui_mat(reasults)\nprint(reasults)\nsystem(\"rm utr.peaks.bed\", wait = T)\nprint(table_brain)\nsystem(\"rm merged.wig\", wait = T)\nsystem(\"rm intersected.wig\", wait = T)\n",
+    "created" : 1562827144988.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2095337663",
+    "id" : "D4D76B04",
+    "lastKnownWriteTime" : 1562845877,
+    "last_content_update" : 1562845877104,
+    "path" : "/specific/netapp5_2/elkon/eldadshulman/datasets/Eldad/APA/lung_carcinom/mclust/int/script.r",
+    "project_path" : null,
+    "properties" : {
+    },
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
