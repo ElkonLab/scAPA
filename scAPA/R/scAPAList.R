@@ -365,7 +365,9 @@ setMethod("[",
             if(nrow(x@down.seq) > 0) {
               .subdown.seq <- x@down.seq[i,]
             } else .subdown.seq <- data.frame()
-            .submetadata <- x@metadata[i,]
+            peakstokeep <- lapply(.subclus.counts, row.names)
+            peakstokeep <- as.character(unlist(peakstokeep))
+            .submetadata <- x@metadata[which(x@metadata[,4] %in% peakstokeep),]
             .subpvalues <- lapply(x@pvalues, FUN = function(x){x[i,]})
             methods::new("scAPAreasults", cells.counts = .subcells.counts,
                          clus.counts = .subclus.counts,
@@ -388,9 +390,12 @@ setMethod(f = "set_scAPAreasults", signature =  c(x = "scAPAList"),
               row.n <- lapply(.clus.counts, nrow)
               f.list.utr <- .clus.counts[row.n > 1]
               clus.counts <- f.list.utr
+              peakstokeep <- lapply(clus.counts, row.names)
+              peakstokeep <- as.character(unlist(peakstokeep))
+              .metadata <- x@row.Data[which(x@row.Data[,4] %in% peakstokeep),]
               if(ncol(x@cells.counts) == 0){
                 out <- methods::new("scAPAreasults", clus.counts = clus.counts,
-                                    cells.counts= list(),
+                                    cells.counts= list(), metadata = .metadata,
                                     down.seq = data.frame())
               } else{
                 to.split <- cbind.data.frame(peak.info[,-1],x@cells.counts[,-1])
@@ -402,7 +407,7 @@ setMethod(f = "set_scAPAreasults", signature =  c(x = "scAPAList"),
                 .cells.counts <- f.list.utr
                 .peak.pvaues = list()
                 out <- methods::new("scAPAreasults", clus.counts = clus.counts,
-                                    cells.counts= .cells.counts,
+                                    cells.counts= .cells.counts, metadata = .metadata,
                                     down.seq = x@down.seq, peak.pvaues = .peak.pvaues )
               }
             }
