@@ -21,12 +21,9 @@ Installing
 -   Install all the above.
 -   Install the R packege devtools. In R:
 
-``` r
-install.packages("devtools")
-```
+<!-- -->
 
-    ## Installing package into '/home/eldad/R/x86_64-pc-linux-gnu-library/3.5'
-    ## (as 'lib' is unspecified)
+    ## install.packages("devtools")
 
 -   Download scRNAscript folder.
 -   Open configfile.txt. Fill in the paths to the fasta files, chromosome length files, and all the softwere as instructed in the file. Leave "PATH" if the tool is in your PATH environment variable. Save your changes.
