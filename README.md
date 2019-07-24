@@ -12,7 +12,8 @@ Prerequisites
 4.  [Homer](http://homer.ucsd.edu/homer/introduction/install.html) version v4.8.3 or above. Uses homer's "MakeTagdirectory" and "findPeaks".
 5.  [UMI\_tools](https://github.com/CGATOxford/UMI-tools/blob/master/doc/QUICK_START.md) test with version
 6.  [Drop-seq\_tools-2.2.0](https://github.com/broadinstitute/Drop-seq/releases/tag/v2.2.0)
-7.  R version 3.5.3, and above. 8 Optional:
+7.  R version 3.5.3, and above.
+8.  Optional: [ChangePoint](https://sourceforge.net/projects/utr/files/), version 0.1.1
 
 Installing
 ==========
@@ -38,9 +39,13 @@ Preparing the files
 
 Put in one directory the following files (and only those files):
 
-**1. Single-cell RNA seq BAM files** BAM files aligned using cell ranger counts. Cell barcode is CB, and the molecular barcode is UB. The name of each BAM file should be of the following format: sample.name.BAM. Avoid underscores in the names.
+**1. Single-cell RNA seq BAM files**
 
-**2. Cluster annotations** Tab-delimited two column files with no header. The first column is the cell barcodes (CB). The second is the cluster assigned to the cell. Each file corresponds to a sample (BAM). Notice that the cell barcodes are the same as in the BAM. For example, if the end of the barcode in the BAM file is "-1", it should be the same in the text file. The names of the files should be of the following format: clusters\_sample.name.txt, where the sample names matches those of the BAM file.
+BAM files aligned using cell ranger counts. Cell barcode is CB, and the molecular barcode is UB. The name of each BAM file should be of the following format: sample.name.BAM. Avoid underscores in the names.
+
+**2. Cluster annotations**
+
+Tab-delimited two column files with no header. The first column is the cell barcodes (CB). The second is the cluster assigned to the cell. Each file corresponds to a sample (BAM). Notice that the cell barcodes are the same as in the BAM. For example, if the end of the barcode in the BAM file is "-1", it should be the same in the text file. The names of the files should be of the following format: clusters\_sample.name.txt, where the sample names matches those of the BAM file.
 
 Usage
 -----
