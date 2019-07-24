@@ -2,10 +2,10 @@
 #
 script.args = commandArgs(trailingOnly=TRUE)
 if (((script.args[1] == "-h") | (script.args[1] == "--help") | (is.na(script.args[1])))) {
-  cat("\n Usage: scAPA.script.R -p <path.to.files> -org <organism> [options]\n\n",
+  cat("\n Usage: scAPA.script.R -p <path.to.files> -org <organism> -sp <path.to.script.Dir> [options]\n\n",
       "Arguments:\n\n\t-p \tThe path to bam files, cell cluster files, list.bams.txt",
       " and cell.cluster.list.txt\n\t\t/path/to/files\n\n\t-org \tOrganism, either Mm",
-      "for mouse, or Hs for human\n\n\t-c\tThe number of cores to use.\n\nOutput Options",
+      "for mouse, or Hs for human\n\n\t-c\tThe number of cores to use.\n\t-sp The path to the directory of scAPA.shell.script.\n\nOutput Options",
       "\n\n\t-wig\tWeather to generate cluster wig files.", 
       " Defult value: false\n\nAnalysis ",
       "Options\n\n\t-sc\tIf true, (default) counts read from individual cells (slower). ",
@@ -72,6 +72,7 @@ if(!(org %in% c("Mm", "Hs"))) {
               "(for mouse) or Hs (for human)"),
        call.=FALSE)
 }
+path.to.config <- read_args(arg.string = "-sp", arg = script.args)
 c <- read_args(arg.string = "-c", defult = 30, arg = script.args)
 c <- as.numeric(c)
 #The following arguments are optional. If not provided, defult values are set.
@@ -91,8 +92,8 @@ IC.cuttoff <- read_args(arg.string = "-Ico", defult = 50, arg = script.args)
 wig <-  read_args(arg.string = "-wig", defult = "false", arg = script.args)
 wig <- ifelse(wig == "true", TRUE, FALSE)
 script.WD <- getwd()
-##data.dir <-paste0(script.WD, "/data/")
 #Read in configuration file
+setwd(path.to.config)
 configfile <- as.character(read.delim("configfile.txt", header = F)[,1])
 configfile[configfile == "PATH"] <- ""
 if(org == "Mm"){
@@ -169,81 +170,81 @@ write(x = script.start.messsege, file = "scAPA.script.log", append = F)
 # use Drop-seq tools to filter the BAMs, leaving only reads with corrected
 # molecular barcode tag
 # 
-# # FilterBAM ---------------------------------------------------------------
-# FilterBAM.command <- paste0("sh -c 'for sample in ", samples, " ;",
-#                             " do ",drop.seq.tools.path,"FilterBam TAG_RETAIN=UB",
-#                             " I=../${sample}.bam O=./temp/UB.${sample}.bam &> ",
-#                             "./Log.files/FilterBAM.${sample}.bam.out; done'")
-# write_log_start("FilterBAM", command = FilterBAM.command)
-# system(command = FilterBAM.command, wait = T)
-# if(!all(file.exists(paste0("./temp/UB.", samples.vector, ".bam")))) {
-#   write_log(stage = "FilterBAM", success = F)
-#   stop("FilterBAM did not end, shell script did NOT end!")
-# }
-# write_log(stage = "FilterBAM")
-# 
-# #	ii. Use UMI tools with “method=unique” so that cellranger corrected molecular
-# # barcodes are used
-# 
-# # samtools index ----------------------------------------------------------
-# index.command <- paste0("sh -c 'for sample in ", samples, " ; do ",
-#                         samtools.path, "samtools index temp/UB.${sample}.bam",
-#                         " &> ./Log.files/Index.${sample}.out; done'")
-# write_log_start("samtools index", command = index.command)
-# print(index.command)
-# system(command = index.command, wait = T)
-# if(!all(file.exists(paste0("./temp/UB.", samples.vector, ".bam.bai")))) {
-#   write_log(stage = "samtools index", success = F)
-#   stop("samtools index did not end, shell script did NOT end!")
-# }
-# write_log(stage = "samtools index")
-# 
-# # umi_tools ---------------------------------------------------------------
-# umi_tools.command <- paste0("sh -c 'for sample in ", samples,
-#                             " ;do ", umi_tools.path, "umi_tools dedup -I ",
-#                             "temp/UB.${sample}.bam -S temp/dedup.${sample}.bam",
-#                             " --method=unique --extract-umi-method=tag ",
-#                             "--umi-tag=UB --cell-tag=CB &> ",
-#                             "./Log.files/umi_tools.${sample}.out;",
-#                             " done'")
-# write_log_start("umi_tools,", command = umi_tools.command)
-# print(umi_tools.command)
-# system(command = umi_tools.command, wait = T)
-# if(!all(file.exists(paste0("temp/dedup.", samples.vector, ".bam")))) {
-#   write_log(stage = "umi_tools", success = F)
-#   stop("umi_tools did not end, shell script did NOT end!")
-# }
-# write_log(stage = "umi_tools")
-# system(command = "rm temp/UB.*.bam*", wait = T)
-# 
-# # Peak detection -------------------------------------------------------
-# # i.	Use Homer to create a tag directory (Tagdirectory) from all the PCR removed BAMs
-# 
-# # makeTagDirectory --------------------------------------------------------
-# makeTagDirectory.command <- paste0(homer.path, "makeTagDirectory ./temp/Tagdirectory ",
-#                                    "./temp/dedup.* &> ./Log.files/",
-#                                    "makeTagDirectory.out")
-# write_log_start("makeTagDirectory", command = makeTagDirectory.command )
-# print(makeTagDirectory.command)
-# system(command = makeTagDirectory.command, wait = T)
-# if(!dir.exists(paste0("./temp/Tagdirectory"))) {
-#   write_log(stage = "makeTagDirectory", success = F)
-#   stop("makeTagDirectory did not end, shell script did NOT end!")
-# }
-# write_log(stage = "makeTagDirectory")
-# 
+# FilterBAM ---------------------------------------------------------------
+FilterBAM.command <- paste0("sh -c 'for sample in ", samples, " ;",
+                            " do ",drop.seq.tools.path,"FilterBam TAG_RETAIN=UB",
+                            " I=../${sample}.bam O=./temp/UB.${sample}.bam &> ",
+                            "./Log.files/FilterBAM.${sample}.bam.out; done'")
+write_log_start("FilterBAM", command = FilterBAM.command)
+system(command = FilterBAM.command, wait = T)
+if(!all(file.exists(paste0("./temp/UB.", samples.vector, ".bam")))) {
+  write_log(stage = "FilterBAM", success = F)
+  stop("FilterBAM did not end, shell script did NOT end!")
+}
+write_log(stage = "FilterBAM")
+
+#	ii. Use UMI tools with “method=unique” so that cellranger corrected molecular
+# barcodes are used
+
+# samtools index ----------------------------------------------------------
+index.command <- paste0("sh -c 'for sample in ", samples, " ; do ",
+                        samtools.path, "samtools index temp/UB.${sample}.bam",
+                        " &> ./Log.files/Index.${sample}.out; done'")
+write_log_start("samtools index", command = index.command)
+print(index.command)
+system(command = index.command, wait = T)
+if(!all(file.exists(paste0("./temp/UB.", samples.vector, ".bam.bai")))) {
+  write_log(stage = "samtools index", success = F)
+  stop("samtools index did not end, shell script did NOT end!")
+}
+write_log(stage = "samtools index")
+
+# umi_tools ---------------------------------------------------------------
+umi_tools.command <- paste0("sh -c 'for sample in ", samples,
+                            " ;do ", umi_tools.path, "umi_tools dedup -I ",
+                            "temp/UB.${sample}.bam -S temp/dedup.${sample}.bam",
+                            " --method=unique --extract-umi-method=tag ",
+                            "--umi-tag=UB --cell-tag=CB &> ",
+                            "./Log.files/umi_tools.${sample}.out;",
+                            " done'")
+write_log_start("umi_tools,", command = umi_tools.command)
+print(umi_tools.command)
+system(command = umi_tools.command, wait = T)
+if(!all(file.exists(paste0("temp/dedup.", samples.vector, ".bam")))) {
+  write_log(stage = "umi_tools", success = F)
+  stop("umi_tools did not end, shell script did NOT end!")
+}
+write_log(stage = "umi_tools")
+system(command = "rm temp/UB.*.bam*", wait = T)
+
+# Peak detection -------------------------------------------------------
+# i.	Use Homer to create a tag directory (Tagdirectory) from all the PCR removed BAMs
+
+# makeTagDirectory --------------------------------------------------------
+makeTagDirectory.command <- paste0(homer.path, "makeTagDirectory ./temp/Tagdirectory ",
+                                   "./temp/dedup.* &> ./Log.files/",
+                                   "makeTagDirectory.out")
+write_log_start("makeTagDirectory", command = makeTagDirectory.command )
+print(makeTagDirectory.command)
+system(command = makeTagDirectory.command, wait = T)
+if(!dir.exists(paste0("./temp/Tagdirectory"))) {
+  write_log(stage = "makeTagDirectory", success = F)
+  stop("makeTagDirectory did not end, shell script did NOT end!")
+}
+write_log(stage = "makeTagDirectory")
+
 # # findPeaks ---------------------------------------------------------------
-# findPeaks.command <- paste0(homer.path,"findPeaks ./temp/Tagdirectory -size 50 -frag",
-#                             "Length 100 -minDist 1 -strand separate -o ",
-#                             "./temp/Peakfile &> ./Log.files/findPeaks.out")
-# write_log_start("findPeaks,",command = findPeaks.command)
-# system(command = findPeaks.command, wait = T)
-# if(!file.exists(paste0("./temp/Peakfile"))) {
-#   write_log(stage = "findPeaks", success = F)
-#   stop("findPeaks did not end, shell script did NOT end!")
-# }
-# write_log(stage = "findPeaks")
-# 
+findPeaks.command <- paste0(homer.path,"findPeaks ./temp/Tagdirectory -size 50 -frag",
+                            "Length 100 -minDist 1 -strand separate -o ",
+                            "./temp/Peakfile &> ./Log.files/findPeaks.out")
+write_log_start("findPeaks,",command = findPeaks.command)
+system(command = findPeaks.command, wait = T)
+if(!file.exists(paste0("./temp/Peakfile"))) {
+  write_log(stage = "findPeaks", success = F)
+  stop("findPeaks did not end, shell script did NOT end!")
+}
+write_log(stage = "findPeaks")
+
 
 # Peak analysis -----------------------------------------------------------
 setwd("./temp")

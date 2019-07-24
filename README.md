@@ -19,22 +19,22 @@ Installing
 ==========
 
 -   Install all the above.
--   Install the R packege devtools. In R:
+-   Install the R package devtools. In R:
 
 <!-- -->
 
     ## install.packages("devtools")
 
 -   Download scRNAscript folder.
--   Open configfile.txt. Fill in the paths to the fasta files, chromosome length files, and all the softwere as instructed in the file. Leave "PATH" if the tool is in your PATH environment variable. Save your changes.
+-   Open configfile.txt. Fill in the paths to the fasta files, chromosome length files, and all the tools as instructed in the file. Leave "PATH" if the tool is in your PATH environment variable. Save your changes.
 
 Using scAPA shell script
 ========================
 
-Preparing the files
--------------------
+Input Files
+-----------
 
-Put in one directory the following files (and only those files):
+For an example of input files, see the example below. Put in one directory the following files (and only those files):
 
 **1. Single-cell RNA seq BAM files**
 
@@ -42,25 +42,37 @@ BAM files aligned using cell ranger counts. Cell barcode is CB, and the molecula
 
 **2. Cluster annotations**
 
-Tab-delimited two column files with no header. The first column is the cell barcodes (CB). The second is the cluster assigned to the cell. Each file corresponds to a sample (BAM). Notice that the cell barcodes are the same as in the BAM. For example, if the end of the barcode in the BAM file is "-1", it should be the same in the text file. The names of the files should be of the following format: clusters\_sample.name.txt, where the sample names matches those of the BAM file.
+Tab-delimited two-column files with no header. The first column is the cell barcodes (CB). The second is the cluster assigned to the cell. Each file corresponds to a sample (BAM). Notice that the cell barcodes are the same as in the BAM. For example, if the end of the barcode in the BAM file is "-1", it should be the same in the text file. The names of the files should be of the following format: clusters\_sample.name.txt, where the sample names match those of the BAM file.
 
 Usage
 -----
 
 Run the script as follow:
 
-    ## path.to.R/bin/Rscript path.to.scAPAshellscript/scAPA.shell.script.R -p <path.to.files> -org <organism> [options]
+    ## path.to.R/bin/Rscript path.to.scAPAshellscript/scAPA.shell.script.R -p <path.to.files> -org <organism> -sp <path.to.script.dir> [options]
 
-&lt;path.to.files&gt; is the path to the directory with BAM and cluster anotations tex files. Do not add / in the end of the path. -org The organism is either Mm for a mouse (mm10) or Hs for human (hg19). For a list of options, type:
+&lt;path.to.files&gt; is the path to the directory with BAM and cluster anotations tex files. Do not add / in the end of the path. -org The organism is either Mm for a mouse (mm10) or Hs for human (hg19). &lt;path.to.script.dir&gt; is the path to the directory of scAPA.shell.script.R For a list of options, type:
 
     ## path.to.R/bin/Rscript path.to.scAPAshellscript/scAPA.shell.script.R --help
 
-Outputs
--------
+Example for usage
+-----------------
 
-For a full list of outputs and outputs details, see the file [outputs.md](outputs.md) In the files directory, The script creates the directory scAPA and in it a directory called outputs. The output of the analysis includes, among others, a table of p-values for dynamical APA events. A file with p-values per peak for 3'UTRs with multiple peaks, and a file with a mean proximal (or intronic) PUI for each cell from the cluster annotations file.
+The files used for this example are from. The fastq files can be downloaded from. **Please notice that the BAM files here are downsampled version of the BAM files.** The result will differ from the results obtained from analyzing the full BAM files. Downlad the folder down.sampled.spermatogenesis from [this link](https://drive.google.com/open?id=1xK7lR2ECfJ-Cjb1f4bYnaA5JjYtdqrGA). After downloading and configuring scAPA.sell.script.R, use the following command:
 
-Inside, the script creates a log file "scAPA.script.log" logging the script's progress. The directory scAPA/Log.files contains Logs from the tools being used (such as UMI tools). The directory scAPA/temp contains temporary files created. This directory is deleted when the script finishes. At the end of the script the directory wi
+    ## path.to.R/bin/Rscript path.to.scAPAshellscript/scAPA.shell.script.R -p <path.to.files> -org <organism> -sp <path.to.script.dir> [options]
+
+&lt;path.to.files&gt; is the path to down.sampled.spermatogenesis folder ("/path/to/down.sampled.spermatogenesis"). By default, the script analyses peak also at a single-cell level. For faster analysis, analyze only in the level of cell clusters by using the -sc false option. The default number of cores to use is 30.
+
+Output Files
+------------
+
+For a full list of output files and their description, see the file [outputs.md](outputs.md) The following is a partial list of outputs: \* **summary.UTR.txt (summary.UTR.txt)** summary of the 3'UTR peak analysis. \* **ThreeUTR.peaks.txt (Intron.peaks.tt)** The 3'UTR peaks that passed filtering. The file contains the peak ID, gene symbol, ensemble ID, and genomic location. \* **APA.events.txt** For 3'UTRs with more than one peak, gives the p-value, FDR corrected q-value of APA event tested across the clusters. Also given is the proximal PUI index for each cell cluster for each 3'UTR. \* **UTRs.with.multiple.peaks.txt** a file containing the results of testing the differential usage of individual peaks across clusters. Only peaks from 3'UTR that came up significant in the analysis and had more than 2 peaks are analyzed. The file contains tables for each 3'UTR. The p-value and FDR q-value for each peak (from chi-square test for goodness of fit) are given. The peak usage index (PUI) for each cluster is given. Higher PUI in a cluster means higher usage of the peak in the cluster. \* **Mean.Cell.PPUI.txt** gives the mean proximal PUI index for the cells analyzed (cells in the cluster annotation files.)
+
+Log files
+---------
+
+The script's logfile scAPA.script.log is created in scAPA directory. A directory Log.files is created containing the log files from the tools (such as UMI tools) used.
 
 Authors
 -------
@@ -71,4 +83,4 @@ Authors
 License
 -------
 
-This project is licensed under the BSD 3 License - see the LICENSE.md file for details
+This project is licensed under the BSD 3 License - see the [LICENSE.md](LICENSE.md) file for details
