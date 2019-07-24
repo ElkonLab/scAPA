@@ -55,10 +55,10 @@ Run the script as follow:
 
     ## path.to.R/bin/Rscript path.to.scAPAshellscript/scAPA.shell.script.R --help
 
-Output
-------
+Outputs
+-------
 
-For a full list of outputs and explanation of the outputs, see the file "Output.html" In the files directory, The script creates the directory scAPA and in it a directory called outputs. The output of the analysis includes, among others, a table of p-values for dynamical APA events. A file with p-values per peak for 3'UTRs with multiple peaks, and a file with a mean proximal (or intronic) PUI for each cell from the cluster annotations file.
+For a full list of outputs and outputs details, see the file [outputs.md](outputs.md) In the files directory, The script creates the directory scAPA and in it a directory called outputs. The output of the analysis includes, among others, a table of p-values for dynamical APA events. A file with p-values per peak for 3'UTRs with multiple peaks, and a file with a mean proximal (or intronic) PUI for each cell from the cluster annotations file.
 
 Inside, the script creates a log file "scAPA.script.log" logging the script's progress. The directory scAPA/Log.files contains Logs from the tools being used (such as UMI tools). The directory scAPA/temp contains temporary files created. This directory is deleted when the script finishes. At the end of the script the directory wi
 
