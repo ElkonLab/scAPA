@@ -140,8 +140,6 @@ bedtools.path <- configfile[18]
 path.to.chang.point <- configfile[20]
 # Load R packeges and function scripts------------------------------------------ 
 # This function load packeges and install them in case they are not installed
-print(loc)
-print(class(loc))
 if(!is.null(loc)) .libPaths(loc)
 if (!require(package = "dplyr", quietly = T)) {
   install.packages(pkgs = "dplyr")}
@@ -200,7 +198,7 @@ if (!int) {
                                     "-p = ", path.to.files, "\n", 
                                     "-org = ", org, "\n", 
                                     "-c = ", c, "\n", 
-                                    "-sp = ", sp, "\n", 
+                                    "-sp = ", path.to.config, "\n", 
                                     "-sc = ", sc, "\n", 
                                     "-int = ", int, "\n",
                                     "-wig = ", wig, "\n", 
@@ -215,7 +213,7 @@ if (!int) {
                                     "-p = ", path.to.files, "\n",
                                     "-org = ", org, "\n", 
                                     "-c = ", c, "\n",
-                                    "-sp = ", sp, "\n", 
+                                    "-sp = ", path.to.config, "\n", 
                                     "-sc = ", sc, "\n", 
                                     "-int = ", int, "\n", 
                                     "-wig = ", wig, "\n", 
@@ -240,8 +238,8 @@ write(x = script.start.messsege, file = "scAPA.script.log", append = F)
 
 # 1.Defining 3'UTR peaks PCR duplicates removal --------------------------- 
 # FilterBAM ---------------------------------------------------------------
-write_log_start("Stage 1: Defining 3'UTR peaks\n\n", command = NULL)
-write_log_start("Stage 1a: PCR duplicates removal\n\n", command = NULL)
+write_log_start("Stage 1: Defining 3'UTR peaks\n\n", command = NA)
+write_log_start("Stage 1a: PCR duplicates removal\n\n", command = NA)
 FilterBAM.command <- paste0("sh -c 'for sample in ", samples, " ;", " do ", 
                             drop.seq.tools.path, "FilterBam TAG_RETAIN=UB", 
                             " I=../${sample}.bam O=./temp/UB.${sample}.bam &> ", 
@@ -289,7 +287,7 @@ write_log(stage = "umi_tools")
 system(command = "rm temp/UB.*.bam*", wait = T)
 
 # Peak detection -------------------------------------------------------
-write_log_start("Stage 1b: Peak detection\n\n", command = NULL)
+write_log_start("Stage 1b: Peak detection\n\n", command = NA)
 
 # makeTagDirectory --------------------------------------------------------
 makeTagDirectory.command <- paste0(homer.path, 
