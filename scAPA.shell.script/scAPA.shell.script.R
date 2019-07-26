@@ -631,7 +631,8 @@ write_log_start("Stage 4: Statistical analysis (3'UTRs)\n\n",
 reasults <- set_scAPAreasults(a.fil)
 # Chi-squre test for APA
 reasults <- test_APA(reasults, clus = "all")
-# For APA with more than one peak and whose p-value is < sig.level, perform chi-squered test for goodness of fit
+# For APA with more than one peak and whose p-value is < sig.level, 
+# perform chi-squered test for goodness of fit
 reasults <- test_peaks(reasults, clus = "all", sig.level = 0.05)
 
 # Inferring global trends -------------------------------------------------
@@ -689,7 +690,8 @@ p <- p + ggplot2::ylab("Cumulative fraction")
 print(p)
 dev.off()
 
-# Introns ----------------------------------------------------------------- Peak filtering ----------------------------------------------------------
+# Introns ----------------------------------------------------------------- 
+# Peak filtering ----------------------------------------------------------
 write_log_start("Stage 3: Peak filtering (introns)\n\n",
                 command = NA, f = "../scAPA.script.log")
 if (int) {
@@ -759,7 +761,8 @@ if (int) {
     print(p)
     dev.off()
 }
-# End of script ----------------------------------------------------------- Removing remining temporary files
+# End of script ----------------------------------------------------------- 
+# Removing remining temporary files
 system(command = "rm -r temp", waite = T)
 write(x = cat(Sys.time(), "\tscAPA.script.R Finished.\nOutputs are in the ", 
               "directory:\n", path.to.files, "/scAPA/outs"), 

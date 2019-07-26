@@ -31,3 +31,9 @@ read_args <- function(arg = script.args, arg.string, defult = NULL){
 }
   out
   }
+
+write.bed <- function(.x,f){
+  write.table(x = .x, file = f, sep ="\t",
+              col.names = F, row.names = F,
+              quote = F)
+}

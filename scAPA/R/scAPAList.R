@@ -26,17 +26,24 @@ extract_peak_info <- function(x) {
 #' Single cell RNA-seq 3'UTR or introns peak data.
 #' 
 #' A list-based S4 class for storing read counts and associated information
-#' from single-cell RNA sequencing experiments. For downstream Alternative Polyadenylation analysis.
+#' from single-cell RNA sequencing experiments. 
+#' For downstream Alternative Polyadenylation analysis.
 #' 
-#' @slot .cells.counts a data.frame, first column "Peak_ID", is the ID of the peak.
+#' @slot .cells.counts a data.frame, first column "Peak_ID", 
+#' is the ID of the peak.
 #'  Other columns (numeric) are cell barcodes, cells - read counts.
-#' @slot .clus.counts If available, the sum of the counts for each peak ID from the clusters to be analyzed.
+#' @slot .clus.counts If available, the sum of the counts for each 
+#' peak ID from the clusters to be analyzed.
 #' Data.frame, the first column "Peak_ID", is the ID of the peak.
-#' Other columns are the clusters, cells have the sum of the counts for each cluster for each peak ID.
-#' @slot .cluster.anot A Data.frame, the first column is the cell barcode as it appears in the column names of cells.counts.
+#' Other columns are the clusters, cells have the sum of the counts 
+#' for each cluster for each peak ID.
+#' @slot .cluster.anot A Data.frame, the first column is the cell barcode 
+#' as it appears in the column names of cells.counts.
 #'  Second column is the cluster name corresponding to each cell barcode.
-#' @slot .row.Data Data.frame, details regarding the peaks (e.g genomic location, gene ID)
-#' @slot .down.seq Data.frame, the first column is the peak ID, the second is the genomic sequence 200 nt downstream to it.
+#' @slot .row.Data Data.frame, details regarding the peaks (e.g genomic 
+#' location, gene ID)
+#' @slot .down.seq Data.frame, the first column is the peak ID, 
+#' the second is the genomic sequence 200 nt downstream to it.
 #'  For filtering internal priming suspected peaks.
 setClass("scAPAList",
          slots = list(cells.counts = "data.frame", clus.counts = "data.frame",
@@ -50,19 +57,27 @@ setClass("scAPAList",
 #' scAPAList Constructor
 #' 
 #' A list-based S4 class for storing read counts and associated information
-#' from single-cell RNA sequencing experiments. For downstream Alternative Polyadenylation analysis.
+#' from single-cell RNA sequencing experiments. For downstream Alternative 
+#' Polyadenylation analysis.
 #'
-#' @param .cells.counts a data.frame, first column "Peak_ID", is the ID of the peak.
+#' @param .cells.counts a data.frame, first column "Peak_ID", is the 
+#' ID of the peak.
 #'  Other columns (numeric) are cell barcodes, cells - read counts.
-#' @param .clus.counts If available, the sum of the counts for each peak ID from the clusters to be analyzed.
+#' @param .clus.counts If available, the sum of the counts for each 
+#' peak ID from the clusters to be analyzed.
 #' Data.frame, the first column "Peak_ID", is the ID of the peak.
-#' Other columns are the clusters, cells have the sum of the counts for each cluster for each peak ID.
-#' @param .cluster.anot A Data.frame, the first column is the cell barcode as it appears in the column names of cells.counts.
+#' Other columns are the clusters, cells have the sum of the counts for 
+#' each cluster for each peak ID.
+#' @param .cluster.anot A Data.frame, the first column is the cell barcode 
+#' as it appears in the column names of cells.counts.
 #'  Second column is the cluster name corresponding to each cell barcode.
-#' @param .row.Data Data.frame, details regarding the peaks (e.g genomic location, gene ID)
-#' @param .down.seq Data.frame, the first column is the peak ID, the second is the genomic sequence 200 nt downstream to it.
+#' @param .row.Data Data.frame, details regarding the peaks (e.g genomic
+#'  location, gene ID)
+#' @param .down.seq Data.frame, the first column is the peak ID, the second
+#'  is the genomic sequence 200 nt downstream to it.
 #'  For filtering internal priming suspected peaks.
-set_scAPAList <- function(.cells.counts = data.frame(), .clus.counts = data.frame(),
+set_scAPAList <- function(.cells.counts = data.frame(), 
+                          .clus.counts = data.frame(),
                           .cluster.anot= data.frame(), 
                           .row.Data = data.frame(),
                           .down.seq = data.frame()){
@@ -71,8 +86,10 @@ set_scAPAList <- function(.cells.counts = data.frame(), .clus.counts = data.fram
          "or a non empty .cells.counts")
   }
   if((nrow(.clus.counts) > 0) & (nrow(.cells.counts) == 0 | nrow(.cluster.anot) == 0)) {
-    out <- methods::new("scAPAList", cells.counts = .cells.counts, clus.counts = .clus.counts,
-                        cluster.anot = .cluster.anot, row.Data = .row.Data,
+    out <- methods::new("scAPAList", cells.counts = .cells.counts, 
+                        clus.counts = .clus.counts,
+                        cluster.anot = .cluster.anot, 
+                        row.Data = .row.Data,
                         down.seq = .down.seq)
   } else{
 .cells.counts$Peak_ID <- as.character(.cells.counts$Peak_ID)
@@ -225,11 +242,13 @@ setMethod("calc_cpm",
 #'Filter peaks that may stem from internal priming.
 #'
 #'Filter out peaks that may stem from internal priming.
-#'If a sequance specified by int.priming.seq, is found in an interval btween 'left' and 'right' nt 
+#'If a sequance specified by int.priming.seq, is found in an interval
+#' btween 'left' and 'right' nt 
 #'downstream the peak's 3' edge, the peak will be filtered out.
 #'Returns a filtered scAPAList.
 #'@param x An scAPAList with a nonempty down.seq slot
-#'@param int.priming.seq Charechter, the sequance to filter for. Defult for 3'UTRs "AAAAAAAA".
+#'@param int.priming.seq Charechter, the sequance to filter for. 
+#'Defult for 3'UTRs "AAAAAAAA".
 #'@param left numeric, defult is 10
 #'@param right numeric defult is 140
 
@@ -241,24 +260,24 @@ setMethod("filter_IP",
           function(x, int.priming.seq, left, right){
             .down.seq.data <- split(x = as.character(x@down.seq[,2]),
                                     f = x@down.seq[,1])
-            #int.priming.seq.neg <- gsub(x = int.priming.seq, pattern = "A", replacement = "T")
-            #int.priming.seq <- paste0(int.priming.seq, "|", int.priming.seq.neg)
             list_pos <- function(x, .int.priming.seq = int.priming.seq){
             gregexpr(pattern  = .int.priming.seq, text = x)
             }
             pos <- lapply(FUN = list_pos, X = .down.seq.data)
             pos <- lapply(X = pos, FUN = unlist)
-            tofilter <- lapply(X = pos, FUN = function(x){any((x < right) & (x > left))})
+            tofilter <- lapply(X = pos, 
+                               FUN = function(x){
+                                 any((x < right) & (x > left))})
             tofilter <- unlist(tofilter)
-            tofilter <- data.frame(Peak_ID = names(tofilter), has_seq = tofilter)
-            tofilter <- tofilter[match(x@clus.counts[,1], tofilter[,1]),]
+            tofilter <- data.frame(Peak_ID = names(tofilter), 
+                                   has_seq = tofilter)
+            tofilter <- tofilter[match(x@clus.counts[,1], 
+                                       tofilter[,1]),]
             rownames(tofilter) <- NULL
             keep.int.pr <- as.vector(!tofilter[,2])
             x <- x[which(keep.int.pr),]
             x
           })
-
-
 # Annotate ----------------------------------------------------------------
 setGeneric("annotate", function(x, org){
   standardGeneric("annotate")
@@ -269,16 +288,20 @@ setMethod("annotate",
   if(org == "Mm") annot <- mmanots
   if(org == "Hs") annot <- hsanots
   order <- x@row.Data[,4]
-  x@row.Data$Ensemble_ID <- gsub(x = x@row.Data[,4], pattern = "_\\d*_\\d*$", replacement = "")
+  x@row.Data$Ensemble_ID <- gsub(x = x@row.Data[,4], 
+                                 pattern = "_\\d*_\\d*$",
+                                 replacement = "")
   x@row.Data <- merge(x@row.Data, annot, by = "Ensemble_ID")
   x@row.Data <- x@row.Data[,c(8,1,5,2:4,7)]
   x@row.Data <- x@row.Data[match(order, x@row.Data[,3]),]
-  colnames(x@row.Data)[3:6] <- c("Peak_ID", "Chromosome", "Peak_Start", "Peak_End")
+  colnames(x@row.Data)[3:6] <- c("Peak_ID", "Chromosome",
+                                 "Peak_Start", "Peak_End")
   x
 })
 
 # Density plot ------------------------------------------------------------
-setGeneric("plot_seq_pos_density", function(x, int.priming.seq = "AAAAAAAA"){
+setGeneric("plot_seq_pos_density", 
+           function(x, int.priming.seq = "AAAAAAAA"){
   standardGeneric("plot_seq_pos_density")
 })
 setMethod("plot_seq_pos_density",
@@ -287,8 +310,10 @@ setMethod("plot_seq_pos_density",
             .down.seq.data <- split(x = as.character(x@down.seq[,2]),
                                     f = x@down.seq[,1])
             title <- paste0("Histogram of ",int.priming.seq, " positions")
-            int.priming.seq.neg <- gsub(x = int.priming.seq, pattern = "A", replacement = "T")
-            int.priming.seq.pos <- paste0(int.priming.seq, "|", int.priming.seq.neg)
+            int.priming.seq.neg <- gsub(x = int.priming.seq, pattern = "A",
+                                        replacement = "T")
+            int.priming.seq.pos <- paste0(int.priming.seq, "|",
+                                          int.priming.seq.neg)
             list_pos <- function(x, .int.priming.seq = int.priming.seq){
               gregexpr(pattern  = .int.priming.seq, text = x)
             }
@@ -299,7 +324,8 @@ setMethod("plot_seq_pos_density",
             pos <- pos[keep]
             pos <- unlist(pos)
             pos <- data.frame(id = names(pos), pos = pos)
-            hist(pos[,2], breaks = 10, xlab = "Distance to peaks' 3' edge (nt)", main = title )
+            hist(pos[,2], breaks = 10, 
+                 xlab = "Distance to peaks' 3' edge (nt)", main = title )
             # g <- ggplot2::ggplot(pos, ggplot2::aes(x = pos, color = pos))
             # g <- g + ggplot2::geom_density()
             # g <- g + ggplot2::xlab("Distance to peaks' 3' edge (nt)")
@@ -396,7 +422,8 @@ setMethod(f = "set_scAPAreasults", signature =  c(x = "scAPAList"),
                                     cells.counts= list(), metadata = .metadata,
                                     down.seq = data.frame())
               } else{
-                to.split <- cbind.data.frame(peak.info[,-1],x@cells.counts[,-1])
+                to.split <- cbind.data.frame(peak.info[,-1],
+                                             x@cells.counts[,-1])
                 rownames(to.split) <- peak.info[,1]
                 .clus.counts <- split(x = to.split[, -1], f = to.split[,1],
                                       drop = T)
@@ -405,8 +432,10 @@ setMethod(f = "set_scAPAreasults", signature =  c(x = "scAPAList"),
                 .cells.counts <- f.list.utr
                 .peak.pvaues = list()
                 out <- methods::new("scAPAreasults", clus.counts = clus.counts,
-                                    cells.counts= .cells.counts, metadata = .metadata,
-                                    down.seq = x@down.seq, peak.pvaues = .peak.pvaues )
+                                    cells.counts= .cells.counts, 
+                                    metadata = .metadata,
+                                    down.seq = x@down.seq, 
+                                    peak.pvaues = .peak.pvaues)
               }
             }
             if(int){
@@ -414,32 +443,36 @@ setMethod(f = "set_scAPAreasults", signature =  c(x = "scAPAList"),
               x <- calc_cpm(x)
               total <- (rowSums(x@norm$CPM) >=1 ) & (rowSums(x@clus.counts[,-1]) > counts)
               y <- x[which((grepl(x = x@clus.counts[,1], pattern = "_Int_")) & (total)),]
-              # y <- x[which(grepl(x = x@clus.counts[,1], pattern = "_Int_")),]
               y <- calc_cpm(y)
               total <- rowSums(y@norm$CPM)
               y <- y[total > cpm,]
               introns <- cbind.data.frame(y@row.Data[,c(1:3,6)], y@clus.counts)
-              introns$gene <- gsub(pattern = "_Int_.*$", replacement = "", x = introns[,5])
+              introns$gene <- gsub(pattern = "_Int_.*$", replacement = "",
+                                   x = introns[,5])
               if(nrow(cells) > 0){
                 introns.cells <- cells[which(cells$Peak_ID %in% introns$Peak_ID),]
-                introns.cells <- cbind.data.frame(introns[,c(1:4, ncol(introns))], introns.cells)
+                introns.cells <- cbind.data.frame(introns[,c(1:4, ncol(introns))],
+                                                  introns.cells)
               }
               z <- x[which(!grepl(x = x@clus.counts[,1], pattern = "_Int_")),]
               utrs <- cbind.data.frame(z@row.Data[,c(1:3,6)], z@clus.counts)
               utrs$gene <- gsub(pattern = "_.*$", replacement = "", x = utrs[,5])
               if(nrow(cells) > 0){
                 utrs.cells <- cells[which(cells$Peak_ID %in% utrs$Peak_ID),]
-                utrs.cells <- cbind.data.frame(utrs[,c(1:4, ncol(utrs))], utrs.cells)
+                utrs.cells <- cbind.data.frame(utrs[,c(1:4, ncol(utrs))],
+                                               utrs.cells)
               }
               int_utr <- merge(introns, utrs, by = "gene")
               if(nrow(cells) > 0){
-                int_utr.cells <- merge(introns.cells, utrs.cells, by = "gene")
+                int_utr.cells <- merge(introns.cells, utrs.cells, 
+                                       by = "gene")
               }
               int_utr <- dplyr::filter(int_utr, ifelse(Strand.x == "+",
                                                        End.x < End.y,
                                                        End.x > End.y))
               if(nrow(cells) > 0){
-                int_utr.cells <- dplyr::filter(int_utr.cells, ifelse(Strand.x == "+",
+                int_utr.cells <- dplyr::filter(int_utr.cells, 
+                                               ifelse(Strand.x == "+",
                                                                      End.x < End.y,
                                                                      End.x > End.y))
               }
@@ -450,20 +483,26 @@ setMethod(f = "set_scAPAreasults", signature =  c(x = "scAPAList"),
                              paste0(colnames(y@clus.counts[-1]),".x"))
               int_utr <-  dplyr::group_by(int_utr, .dots=group_col)
               if(nrow(cells) > 0){
-                group_col.cells <- c("gene", "Chr.x",  "Start.x", "End.x", "Strand.x",
+                group_col.cells <- c("gene", "Chr.x",  "Start.x", "End.x", 
+                                     "Strand.x",
                                      "Peak_ID.x", 
                                      paste0(colnames(x@cells.counts[-1]),".x"))
-                int_utr.cells <-  dplyr::group_by_at(int_utr.cells, .vars = group_col.cells)
+                int_utr.cells <-  dplyr::group_by_at(int_utr.cells, 
+                                                     .vars = group_col.cells)
               }
               
               tosum <- paste0(colnames(y@clus.counts[-1]),
                               ".y")
-              int_utr <- dplyr::summarise_at(.tbl = int_utr, .vars =tosum , .funs = sum)
+              int_utr <- dplyr::summarise_at(.tbl = int_utr, 
+                                             .vars =tosum ,
+                                             .funs = sum)
               int_utr <- as.data.frame(int_utr)
               if(nrow(cells) > 0){
                 tosum.cells <- paste0(colnames(x@cells.counts[-1]),
                                       ".y")
-                int_utr.cells <- dplyr::summarise_at(.tbl = int_utr.cells, .vars =tosum.cells , .funs = sum)
+                int_utr.cells <- dplyr::summarise_at(.tbl = int_utr.cells, 
+                                                     .vars =tosum.cells, 
+                                                     .funs = sum)
                 int_utr.cells <- as.data.frame(int_utr.cells)
               }
               p <- split(int_utr, f = int_utr$Peak_ID.x, drop = T)
@@ -479,7 +518,8 @@ setMethod(f = "set_scAPAreasults", signature =  c(x = "scAPAList"),
               }
               .clus.counts <- lapply(p, dat.fan)
               if(nrow(cells) > 0){
-                p.cells <- split(int_utr.cells, f = int_utr.cells$Peak_ID.x, drop = T)
+                p.cells <- split(int_utr.cells, f = int_utr.cells$Peak_ID.x,
+                                 drop = T)
                 cellsnu <- ncol(x@cells.counts) -1
                 dat.fan.cells <- function(y){
                   feature <- c(1,2)
@@ -496,15 +536,20 @@ setMethod(f = "set_scAPAreasults", signature =  c(x = "scAPAList"),
               }
               .metadata <- int_utr[,c(2,3,4,6,1,5)]
               
-              colnames(.metadata) <- c("Chr", "Start", "End", "Intron_ID", "Gene", "Strand")
+              colnames(.metadata) <- c("Chr", "Start", "End", "Intron_ID",
+                                       "Gene", "Strand")
               .metadata <- .metadata[.metadata$Intron_ID %in% names(.clus.counts),]
-              .metadata <- .metadata[match(names(.clus.counts), .metadata$Intron_ID),]
+              .metadata <- .metadata[match(names(.clus.counts), 
+                                           .metadata$Intron_ID),]
               .down.seq <- y@down.seq
               .down.seq <- .down.seq[.down.seq$Peak_ID %in% names(.clus.counts),]
-              .down.seq <- .down.seq[match(names(.clus.counts), .down.seq$Peak_ID),]
-              out <- methods::new("scAPAreasults", clus.counts = .clus.counts,
+              .down.seq <- .down.seq[match(names(.clus.counts), 
+                                           .down.seq$Peak_ID),]
+              out <- methods::new("scAPAreasults",
+                                  clus.counts = .clus.counts,
                                   cells.counts= .cells.counts,
-                                  metadata = .metadata, down.seq=.down.seq)
+                                  metadata = .metadata,
+                                  down.seq=.down.seq)
             }
             out
           })
@@ -566,7 +611,8 @@ setMethod("test_APA",
               if(length(.clus) > 1) y <- y[, .clus]
               u <- suppressWarnings(chisq.test(y)$p.value)
             }
-            ptable <- lapply(X = x@clus.counts, FUN = test_utr, .clus = clus)
+            ptable <- lapply(X = x@clus.counts, FUN = test_utr, 
+                             .clus = clus)
             ptable <- do.call(what = rbind, args = ptable)
             ptable <- as.matrix(ptable)
             colnames(ptable) <- "pval"
@@ -717,23 +763,28 @@ setMethod("disply_reasults",
             if(org == "Mm") annot <- mmanots
             if(org == "Hs") annot <- hsanots
             if(!int){
-              out <- data.frame(UTR_ID = row.names(x@pvalues[[1]]), x@pvalues[[1]])
+              out <- data.frame(UTR_ID = row.names(x@pvalues[[1]]),
+                                x@pvalues[[1]])
               if(nrow(x@pAi.clus) > 0){
                 out <- merge(out, x@pAi.clus, by = "row.names")
               }
-              out <- merge(out, x@ppui.clus, by.x = "UTR_ID", by.y = "row.names")
+              out <- merge(out, x@ppui.clus, by.x = "UTR_ID", 
+                           by.y = "row.names")
               out <- merge(annot[,c(1,2,6)], out, by = "UTR_ID")
               out <- out[,-4]
               out <- out[,c(3,2,1,4:11)]
               colnames(out)[4:5] <- c("p-value", "q-value") 
             }
             if(int){
-              out <- data.frame(Intron_ID = row.names(x@pvalues[[1]]), x@pvalues[[1]])
+              out <- data.frame(Intron_ID = row.names(x@pvalues[[1]]), 
+                                x@pvalues[[1]])
               if(nrow(x@pAi.clus) > 0){
                 out <- merge(out, x@pAi.clus, by = "row.names")
               }
-              out <- merge(out, x@ppui.clus, by.x = "Intron_ID", by.y = "row.names")
-              out <- merge(y = out, x = x@metadata[,c(5,4,1:3,6)], by = "Intron_ID")
+              out <- merge(out, x@ppui.clus, by.x = "Intron_ID", 
+                           by.y = "row.names")
+              out <- merge(y = out, x = x@metadata[,c(5,4,1:3,6)],
+                           by = "Intron_ID")
               out <- merge(annot[,c(1,2)], out, by.x = "Ensemble_ID",
                            by.y = "Gene")
               out <- out[,-3]
@@ -752,8 +803,6 @@ setMethod("find_internal_prim_seq",
           function(x, int.priming.seq, left, right){
             .down.seq.data <- split(x = as.character(x@down.seq[,2]),
                                     f = x@down.seq[,1])
-            #int.priming.seq.neg <- gsub(x = int.priming.seq, pattern = "A", replacement = "T")
-            #int.priming.seq <- paste0(int.priming.seq, "|", int.priming.seq.neg)
             list_pos <- function(x, .int.priming.seq = int.priming.seq){
               gregexpr(pattern  = .int.priming.seq, text = x)
             }
@@ -797,19 +846,24 @@ setMethod("write.peaks",
           function(.x, .f){
             if (org == "Mm") ano <- mmanots
             if(org == "Hs") ano <- hsanots
-            peakspval <- merge(.x@peak.pvaues$Peaks_all, ano[,c(1,2)], by.x = "Gene_ID",
+            peakspval <- merge(.x@peak.pvaues$Peaks_all, ano[,c(1,2)],
+                               by.x = "Gene_ID",
                                by.y = "Ensemble_ID")
             peakspval <- unique(peakspval)
-            peakspval$di <- paste0("Gene Symbol: ", peakspval$Gene_Symbol, ", Gene ID ",
-                                   peakspval$Gene_ID, ", UTR ID ",  peakspval$UTR_ID)
+            peakspval$di <- paste0("Gene Symbol: ", peakspval$Gene_Symbol,
+                                   ", Gene ID ",
+                                   peakspval$Gene_ID, ", UTR ID ", 
+                                   peakspval$UTR_ID)
             colnames(peakspval) <- gsub(pattern = "pval", replacement = "p-value",
                                         x = colnames(peakspval))
-            colnames(peakspval) <- gsub(pattern = "qval", replacement = "q-value",
+            colnames(peakspval) <- gsub(pattern = "qval",
+                                        replacement = "q-value",
                                         x = colnames(peakspval))
             peakspval <- split(peakspval[,c(3:8)], f = peakspval$di, drop = T)
             for(i in 1:length(peakspval)){
               write(x = names(peakspval)[i], file = .f, append = T)
-              write.table(x = peakspval[[i]], file = .f, append = T, quote = F, sep = "\t", 
+              write.table(x = peakspval[[i]], file = .f, append = T, quote = F,
+                          sep = "\t", 
                           row.names = F, col.names = T)
             }
           })
@@ -825,8 +879,11 @@ setMethod("annotate_reasults",
             if(org == "Mm") annot <- mmanots
             if(org == "Hs") annot <- hsanots
             order <- x@metadata[,4]
-            x@metadata$Ensemble_ID <- gsub(x = x@metadata[,4], pattern = "_Int_\\d*_\\d*$", replacement = "")
-            x@metadata <- merge(y = x@metadata, x = annot[,1:2], by = "Ensemble_ID")
+            x@metadata$Ensemble_ID <- gsub(x = x@metadata[,4], 
+                                           pattern = "_Int_\\d*_\\d*$", 
+                                           replacement = "")
+            x@metadata <- merge(y = x@metadata, x = annot[,1:2], 
+                                by = "Ensemble_ID")
             x@metadata  <- x@metadata[,c(2,1,6,3:5,8)]
             x
           })

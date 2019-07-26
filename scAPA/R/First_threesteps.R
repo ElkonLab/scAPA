@@ -1,9 +1,3 @@
-write.bed <- function(.x,f){
-  write.table(x = .x, file = f, sep ="\t",
-              col.names = F, row.names = F,
-              quote = F)
-}
-
 # Produccing a GTF file from Homer's output -------------------------------
 #' Merges close peaks
 #'
@@ -25,7 +19,8 @@ merge_peaks <- function(bedtools.path, path, peaks.file){
   # home_dir <- getwd()
   # on.exit(setwd(home_dir))
   # setwd(path)
-  readHomerfile.command <- paste0('awk \'BEGIN{OFS = "\t"}{if(NR>34) print $2, $3, $4, "',
+  readHomerfile.command <- paste0('awk \'BEGIN{OFS = "\t"}{if(NR>34) ',
+                                  'print $2, $3, $4, "',
                                 ',.",".",$5}\' ', peaks.file,
                                 ' > ./notsorted_notmerged_peak.bed')
   system(command = readHomerfile.command, wait = T)
@@ -162,7 +157,8 @@ intersect_peaks <- function(org, path, bed.name, bedtools.path, introns = F) {
                                            dplyr::dense_rank(x = V3),
                                            dplyr::dense_rank(dplyr::desc(x = V3))))
   #this is a column for changing the gene name
-  peakstosort$V4 <- paste0(as.character(peakstosort$V4), "_", peakstosort$desire)
+  peakstosort$V4 <- paste0(as.character(peakstosort$V4), "_", 
+                           peakstosort$desire)
   peakstosort <- peakstosort[,-7]
   system(command = "rm ./threeprimeUTRs.bed", wait = T)
   system("rm ./annotatedpeaks", wait = T)
@@ -199,9 +195,10 @@ intersect_peaks <- function(org, path, bed.name, bedtools.path, introns = F) {
 
     peakstosort <- dplyr::group_by(peakstosort, V4)
     #For peak index: utrs on the plus strand need descending order, minus ascending
-    peakstosort <- dplyr::mutate(peakstosort,desire = ifelse(V6 == "+",
-                                                             dplyr::dense_rank(x = V3),
-                                                             dplyr::dense_rank(dplyr::desc(x = V3))))
+    peakstosort <- dplyr::mutate(peakstosort,
+                                 desire = ifelse(V6 == "+",
+                                                 dplyr::dense_rank(x = V3),
+                                                 dplyr::dense_rank(dplyr::desc(x = V3))))
     #this is a column for changing the gene name
     peakstosort$V4 <- paste0(as.character(peakstosort$V4), "_", peakstosort$desire)
     peakstosort <- peakstosort[,-7]
@@ -278,7 +275,8 @@ creat_saf <- function(bed){
 }
 
 # Reading downstream sequance -----------------------------------------------
-read_down.seq <- function(saf, char.length.path, fasta.path, chr.modify = T, l=-1, r=200) {
+read_down.seq <- function(saf, char.length.path, fasta.path, chr.modify = T, 
+                          l=-1, r=200) {
   sc <- options()
   sc <- sc$scipen
   options(scipen=99999)
@@ -332,7 +330,8 @@ for (nsample in 1:length(clusters)) {
                                   pattern = "-\\d*$",
                                   replacement = "-1")
 
-  clusters[[nsample]][,1] <- paste0(sample.names[nsample],"_", clusters[[nsample]][,1])
+  clusters[[nsample]][,1] <- paste0(sample.names[nsample],"_",
+                                    clusters[[nsample]][,1])
   }
 do.call(what = "rbind", args = clusters)
 }
