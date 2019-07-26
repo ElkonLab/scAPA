@@ -71,7 +71,7 @@ By default, the script counts reads at a single-cell level. For faster analysis,
 
 ### Estimated Run Time
 
-Running the script on the example time with 30 cores, took ttt. Bellow are estimated time (30 cores) for each stage of the analysis:
+Running the script on the example time with 30 cores, took approximately 11 hours. Bellow are estimated times (30 cores) for each stage of the analysis:
 
 -   **Stage 1a** PCR duplicates removal - approximately 2 hours and 30 minutes.
 
@@ -81,11 +81,11 @@ Running the script on the example time with 30 cores, took ttt. Bellow are estim
 
 -   **Stage 2** Quantifying the usage of each peak - approximately 4 hours.
 
--   **Stage 3** Peak filtering - approximately
+-   **Stage 3** Peak filtering - approximately 20 minutes.
 
--   **Stage 4** Statistical analysis
+-   **Stage 4** Statistical analysis - approximately 5 minutes.
 
--   **Stage 5** Inferring global trends
+-   **Stage 5** Inferring global trends - approximately 20 minutes.
 
 Output Files
 ------------
