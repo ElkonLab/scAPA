@@ -1,19 +1,20 @@
 #Put path to mm10 chromosome length file below:
-"/home/elkon/Bowtie2_indexes/Mm/mm10/mm10_chr_len.txt"
+""
 #Put path to mm10 fasta file below:
-"/specific/netapp5_2/elkon/Bowtie2_indexes/Mm/mm10/mm10.fa"
+""
 #Put path to hg19 chromosome length file below:
-"/home/elkon/Bowtie2_indexes/Hs/hg19/hg19_CHR_LENs.txt"
+""
 #Put path to hg19 fasta file below:
-"/specific/netapp5_2/elkon/Bowtie2_indexes/Hs/hg19/hg19.fa"
+""
 #Put path to Drop-seq_tools-2.2.0 below or leave "PATH" if it is in PATH environment variable
-"/home/elkon/tools/Drop-seq_tools-2.2.0/"
+"PATH"
 #Put path to samtools below or leave "PATH" if it is in PATH environment variable
 "PATH"
 #Put path to umi_tools below or "PATH" if it is in PATH environment variable
 "PATH"
 #Put path to Homer below or "PATH" empty if it is in PATH environment variable
-"/home/elkon/tools/homer/bin/"
+"PATH"
 #Put path to bedtools below or "PATH" empty if it is in PATH environment variable
 "PATH"
-#
+#Put path to ChangPoint below or "PATH" empty if it is in PATH environment variable
+"PATH"
