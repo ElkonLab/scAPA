@@ -68,15 +68,13 @@ set_scAPAList <- function(.cells.counts = data.frame(), .clus.counts = data.fram
                           .down.seq = data.frame()){
   if((nrow(.cells.counts) == 0 | nrow(.cluster.anot) == 0) & nrow(.clus.counts) == 0){
     stop("Provide either nonempty .clus.counts and .cluster.anot,",
-         "or  a non empty .cells.counts")
+         "or a non empty .cells.counts")
   }
   if((nrow(.clus.counts) > 0) & (nrow(.cells.counts) == 0 | nrow(.cluster.anot) == 0)) {
     out <- methods::new("scAPAList", cells.counts = .cells.counts, clus.counts = .clus.counts,
                         cluster.anot = .cluster.anot, row.Data = .row.Data,
                         down.seq = .down.seq)
   } else{
-colnames(.cells.counts) <- c("Peak_ID", gsub(x = colnames(.cells.counts)[-1],
-                                         pattern = "[.]", replacement = "-"))
 .cells.counts$Peak_ID <- as.character(.cells.counts$Peak_ID)
 .row.Data_t <- .row.Data[,c(4,1,2,3,5,6)]
 list.tointersect <- list(.cells.counts, .clus.counts, .row.Data_t,
@@ -769,9 +767,6 @@ setMethod("find_internal_prim_seq",
             tofilter
           })
 # Internal primming -------------------------------------------------------
-setGeneric("filter_IP", function(x, int.priming.seq, left, right){
-  standardGeneric("filter_IP")
-})
 setMethod("filter_IP",
           c(x = "scAPAreasults"),
           function(x, int.priming.seq, left, right){

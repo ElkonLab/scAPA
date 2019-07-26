@@ -7,8 +7,9 @@ write.bed <- function(.x,f){
 # Produccing a GTF file from Homer's output -------------------------------
 #' Merges close peaks
 #'
-#' Combines overlapping or “book-ended” peaks detected by Homer findPeaks into
-#'  one peak.
+#' 
+#' Combines overlapping or "book-ended" peaks detected by Homer findPeaks into
+#' one peak.
 #'
 #' @param bedtools.path The path to bedtools. (e.g "/path/to/bedtools/bin/".
 #' End with "/", leave "" if bedtools is in your PATH environment variable)

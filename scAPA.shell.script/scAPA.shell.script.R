@@ -3,11 +3,12 @@
 script.args = commandArgs(trailingOnly=TRUE)
 if (((script.args[1] == "-h") | (script.args[1] == "--help") | (is.na(script.args[1])))) {
   cat("\n Usage: scAPA.script.R -p <path.to.files> -org <organism> -sp <path.to.script.Dir> [options]\n\n",
-      "Arguments:\n\n\t-p \tThe path to bam files, cell cluster files, list.bams.txt",
+      "Arguments:\n\n\t-p \tThe path to the folder with input bam files, and cell cluster annotatios files",
       " and cell.cluster.list.txt\n\t\t/path/to/files\n\n\t-org \tOrganism, either Mm",
-      "for mouse, or Hs for human\n\n\t-c\tThe number of cores to use.\n\t-sp The path to the directory of scAPA.shell.script.\n\nOutput Options",
+      "for mouse, or Hs for human\n\n\t-c\tThe number of cores to use.",
+      "\n\t-sp The path to the directory of scAPA.shell.script.\n\nOutput Options",
       "\n\n\t-wig\tWeather to generate cluster wig files.", 
-      " Defult value: false\n\nAnalysis ",
+      " Defult value: false\n\nAnalysis ","\n\n\t-ChangePoint\t weather to use Change Point. Defult is false.",
       "Options\n\n\t-sc\tIf true, (default) counts read from individual cells (slower). ",
       "Otherwise, counts reads from clusters.\n\n\t-int\tIf true, ", 
       "(default) perform intronic APA analysis as well as 3'UTR analysis.\n\nFiltering",
@@ -23,12 +24,12 @@ if (((script.args[1] == "-h") | (script.args[1] == "--help") | (is.na(script.arg
       " a total sum of CPMs over all cell clusters larger than -Icpm.",
       "\n\n\t-Ico\tConsider only peaks with more than",
       " a total sum of counts over all cell clusters larger than -Ico\n\t\tDefult",
-      " value: 50\n\n\t-a\tNumeric value, filter out peaks with -Ia consecutive As",
-      "in the region -u to -d downstream thire 3' edge.\n\t\tDefult value: 8\n\n\t-u",
-      "\tNumeric value, filter out peaks with -a consecutive As in the region ",
-      "-Iu to -Id downstream thire 3' edge.\n\t\tDefult value: 10\n\n\t-d\tNumeric ",
+      " value: 50\n\n\t-Ia\tNumeric value, filter out peaks with -Ia consecutive As",
+      "in the region -u to -d downstream thire 3' edge.\n\t\tDefult value: 7\n\n\t-Iu",
+      "\tNumeric value, filter out peaks with -Ia consecutive As in the region ",
+      "-Iu to -Id downstream thire 3' edge.\n\t\tDefult value: 1\n\n\t-Id\tNumeric ",
       "value, filter out peaks with -Ia consecutive As in the region -Iu to -Id ",
-      "downstream thire 3' edge.", "\n\t\tDefult value: 140\n\n")
+      "downstream thire 3' edge.", "\n\t\tDefult value: 200\n\n")
   q(save="no", status=1, runLast=FALSE)
 }
 
@@ -89,6 +90,8 @@ IA.number <- read_args(arg.string = "-Ia", defult = 7, arg = script.args)
 Ifilter.border.left <-  read_args(arg.string = "-Iu", defult = 1, arg = script.args)
 Ifilter.border.right <-  read_args(arg.string = "-Id", defult = 200, arg = script.args)
 IC.cuttoff <- read_args(arg.string = "-Ico", defult = 50, arg = script.args)
+ChangePoint <- read_args(arg.string = "-ChangePoint ", defult = FALSE, arg = script.args)
+ChangePoint <- ifelse(ChangePoint == "true", TRUE, FALSE)
 wig <-  read_args(arg.string = "-wig", defult = "false", arg = script.args)
 wig <- ifelse(wig == "true", TRUE, FALSE)
 script.WD <- getwd()
@@ -314,7 +317,7 @@ colnames(int.saf) <- c("GeneID", "Chr",	"Start","End","Strand")
 }
 
 # Split bams for wig or if sc = false------------------------------------------------------------
-if(wig | !sc){
+if(wig | !sc | ChangePoint){
   allclusters <- character()
   for(j in 1:length(samples.vector)) {
   sample <- samples.vector[j]
@@ -381,7 +384,7 @@ if(wig | !sc){
 
 }
 
-if(!sc){
+if(!sc | ChangePoint){
   write_log_start(f = "../scAPA.script.log", "featureCounts for 3UTRs", 
                   command = NA)
   bam.cluster.files <- paste0(clusters,".bam", collapse = " ")
@@ -423,6 +426,34 @@ if(!sc){
 }
 
 
+# ChangePoint -------------------------------------------------------------
+if(ChangePoint){
+  allcombintations <- paste0(" -t ", bam.cluster.files, " -c ", 
+                             rep(bam.cluster.files, 
+                                 each = length(bam.cluster.files)))
+  toexclude <- seq(from =1, to= length(allcombintations), 
+                     by = (length(bam.cluster.files) +1))
+  allcombintations <- allcombintations[-toexclude]
+  if(org == "Mm") write.bed(.x = mm10.utr, f = "3UTR.BED")
+  if(org == "Hs") write.bed(.x = hg19.utr, f = "3UTR.BED")
+  allcombintations_names <- gsub(pattern = " -t ", replacement = "",
+                                 x = allcombintations)
+  allcombintations_names <- gsub(pattern = " -c ", replacement = "_vs_",
+                                 x = allcombintations_names)
+  allcombintations_names <- paste0("ChangePoint.",allcombintations_names)
+  ChangePoint.command <- paste0("perl ", path.to.chang.point,
+                                "change_point.pl -g 3UTR.BED", 
+                                allcombintations," -d s -o ",
+                                allcombintations_names, 
+                                " &> ../Log.files/",
+                                allcombintations_names, ".out")
+  for(i in 1:length(ChangePoint.command)){
+    system(command = ChangePoint.command[i], wait = T)
+  }
+  system("mv ChangePoint.* ../outs", wait = T)
+}
+                                
+# Sc ----------------------------------------------------------------------
 if(sc){
   write_log_start(f = "../scAPA.script.log", "Splitting bams", command = NA)
   if(!dir.exists("CellBams")) dir.create("CellBams")
