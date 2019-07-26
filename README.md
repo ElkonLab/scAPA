@@ -60,6 +60,10 @@ Run the script as follow:
 
     ## path.to.R/bin/Rscript path.to.scAPAshellscript/scAPA.shell.script.R --help
 
+The shell script will perform all the following steps:
+
+![.](Pic/PiplineDigram.png)
+
 Example for usage
 -----------------
 
