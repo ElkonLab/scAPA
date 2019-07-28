@@ -343,9 +343,7 @@ setClass("scAPAresults",
                       down.seq = "data.frame",
                       metadata = "data.frame"))
 
-setGeneric("set_scAPAresults", function(x, int = F, cpm = NULL, counts){
-  standardGeneric("set_scAPAresults")
-})
+
 
 # Subsetting --------------------------------------------------------------
 setMethod("[",
@@ -378,6 +376,10 @@ setMethod("[",
           })
 
 # Creat the object --------------------------------------------------------
+setGeneric("set_scAPAresults", function(x, int = F, cpm = NULL, counts = 50){
+  standardGeneric("set_scAPAresults")
+})
+
 setMethod(f = "set_scAPAresults", signature =  c(x = "scAPAList"),
           definition = function(x, int, cpm, counts){
             if(!int){

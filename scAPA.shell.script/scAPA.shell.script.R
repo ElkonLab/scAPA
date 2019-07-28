@@ -684,7 +684,6 @@ cat("Number of peaks passed fillter:\t", nrow(a.fil@clus.counts),
     file = "./outs/summary.UTR.txt")
 
 # Plot --------------------------------------------------------------------
-cluster <- gsub(x = results@ppui.clus, pattern = "_<pA>", replacement = "")
 tidy.pui <- data.frame(Cluster = cluster, 
                        Proximal.PUI = as.vector(results@ppui.clus))
 tidy.ppui <- as.data.frame(results@ppui.clus)
@@ -752,8 +751,6 @@ if (int) {
         "\n", file = "./outs/summary.Introns.txt")
     
     # Plot --------------------------------------------------------------------
-    cluster <- gsub(x = results.int@ppui.clus, pattern = "_<pA>", 
-                    replacement = "")
     tidy.pui <- data.frame(Cluster = cluster, 
                            Proximal.PUI = as.vector(results.int@ppui.clus))
     tidy.ppui <- as.data.frame(results.int@ppui.clus)
