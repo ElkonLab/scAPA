@@ -15,7 +15,7 @@ Prerequisites
 7.  R version 3.5.3, or above.
 8.  Optional: [ChangePoint](https://sourceforge.net/projects/utr/files/), version 0.1.1
 
-In case they are not already installed, the script automatically installs its required R packages. If you would like the packages to be installed in another library other than your default one (e.g. if you do not have permissions to install packages in this library), specify the path to the alternative library when running the script (-loc = path/to/Rlibrary/).
+In case they are not already installed, the script automatically installs its required R packages. If you would like the packages to be installed in another library other than your default one, specify the path to the alternative library when running the script (-loc = path/to/Rlibrary/).
 
 Installing
 ==========
@@ -89,7 +89,7 @@ Running the script on the example files with 30 cores, took approximately 11 hou
 
 -   **Step 2** Quantifying the usage of each peak - approximately 4 hours.
 
--   **Stage 3** Peak filtering - approximately 20 minutes.
+-   **Step 3** Peak filtering - approximately 20 minutes.
 
 -   **Step 4** Statistical analysis - approximately 5 minutes.
 
@@ -102,7 +102,7 @@ For a full list of output files and their description, see the file [outputs.md]
 
 -   **summary.UTR.txt (summary.Introns.txt)** A short summary of the 3'UTR peak analysis.
 
--   **ThreeUTR.peaks.txt (Intron.peaks.tt)** The 3'UTR peaks that passed filtering. The file contains the peak ID, gene symbol, ensemble ID, and genomic location.
+-   **ThreeUTR.peaks.txt (Intron.peaks.txt)** The 3'UTR peaks that passed filtering. The file contains the peak ID, gene symbol, ensemble ID, and genomic location.
 
 -   **APA.events.txt** For 3'UTRs with more than one peak, gives the p-value, FDR corrected q-value of APA event tested across the clusters. Also given is the proximal PUI index for each cell cluster for each 3'UTR.
 

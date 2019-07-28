@@ -1,0 +1,201 @@
+---
+title: "scAPA packege vignette"
+output: rmarkdown::github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Install and load scAPA package.
+
+```{r load packeges, echo=FALSE}
+if(!require(devtools)) install.packages("devtools")
+require(devtools)
+if(!require(scAPA)) devtools::install_github("ElkonLab/scAPA/scAPA") 
+require(scAPA)
+```
+
+The files used for this example are the results of scAPA analysis of data from [Lukassen et al](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6132189/).
+
+This **is not** a downsampled version, but an analysis of the full bams.
+Load scAPAList object.
+
+```{r Load object, echo=TRUE}
+a <- readRDS("Peaks.RDS")
+a
+```
+
+The object contains the following: 
+
+* The peak count matrix:
+```{r show count matrix, echo=T}
+head(a@cells.counts[,1:3])
+
+```
+rows are peaks, and columns are cell clusters.
+
+* Cell-cluster annotions.
+```{r show cluster anotations}
+head(a@cluster.anot)
+```
+The first column is the cell barcodes as it appears in the peak count matrix. The second is their assigned cell clusters. Other columns, such as the tsne coordinates, are optional.
+
+* A data.frame with the sequence downstream the 3' edge of each peak:
+```{r show down seq}
+head(a@down.seq,2)
+```
+This is required for filtering peaks that may result from internal priming.
+
+* Information regarding the peaks genomic location (this is optional): 
+```{r show row.Data}
+head(a@row.Data)
+```
+
+First, calculate the sum of the counts from each peak in each cell cluster.
+
+```{r calc_clusters_counts}
+a <- calc_clusters_counts(a)
+a
+```
+
+
+##Peak filtering
+
+First, we calculate the peak counts-per-million (CPM) peak cluster matrix.
+
+```{r calc_cpm}
+a <- calc_cpm(a)
+head(a@norm$CPM)
+```
+Then, only peaks whose total sum over all cell clusters is above a certion CPMs threshhold are considered. Here we choose 10 as the threshhold:  
+
+```{r filter law CPMs}
+keep.cpm <- rowSums(a@norm$CPM) > 10
+a <- a[keep.cpm,]
+a
+```
+
+
+To exclude internal priming suspected peaks, peaks having a stretch of at least 8 consecutive As in the region between 10 nt to 140 nt. to the peak's end are filtered. 
+
+```{r filter_IP}
+a <- filter_IP(x = a, int.priming.seq = "AAAAAAAA",
+               left = 10,
+               right = 140)
+a
+```
+
+The sequence and the regions can be varied using the arguments "int.priming.seq", "left", "right". See the function manual page for more details by typing ?filter_IP in R studio.
+
+
+## Statistical analysis – detection of dynamic APA events between cell clusters
+
+* Set an scAPAresults object:
+
+```{r}
+results <- set_scAPAresults(a)
+results
+```
+
+* The slot clus.counts is a list such that each 3’UTR with more than one peak is represented by a table where rows are peak indices and columns cell clusters. 
+
+```{r show results clus.counts}
+results@clus.counts[1:2]
+```
+
+An analogous list is calculated for the slot
+```{r show results cells.counts}
+results@cells.counts[[1]][,1:3]
+```
+Here each column is a cell.
+
+* For each such table, perform a Chi-squared test, p-values are corrected for multiple testing using BH FDR.
+
+```{r test_APA}
+results <- test_APA(results, clus = "all")
+
+head(results@pvalues$all)
+```
+
+The clus argument specifies the clusters to be tested. Default is "all" for all cluster. specify, for example, clus = c("ES", "RS") to test ES vs RS cluster.
+
+* For 3' UTR with more than two peaks that show significant usage change, for each peak i, chi-square test for goodness of fit is performed. The threshold for significant change is set by the argument sig.level (FDR value)
+
+```{r test_peaks}
+results <- test_peaks(results, clus = "all", sig.level = 0.05)
+```
+
+We get a slot with such peaks (p-values, q-values and peak PUI for each cluster).
+
+```{r}
+head(results@peak.pvaues$Peaks_all)
+```
+
+## Inferring global trends of APA modulation
+
+* The proximal pA site usage index (proximal PUI) is used to quantify the relative usage of the most proximal pA site within a 3' UTR (with two or more peaks). See [pipeline.description.pdf](pipeline.description.pdf) for the definition of this index.
+
+```{r calc_p_pui_mat}
+results <- calc_p_pui_mat(results)
+
+head(results@ppui.clus)
+```
+
+This function also creates an object, where for each cell, the mean PUI index is calculated.
+
+* We can creat a scAPAresults object called sig containing only 3'UTR with significant APA events. 
+```{r significants}
+sig.utrs <- as.vector(results@pvalues$all[,2] < 0.05)
+sig <- results[which(sig.utrs),]
+```
+
+Plot the cumulative distribution function of the proximal PUI of the significant 3'UTRs:
+```{r plot ppui}
+tidy.ppui <- as.data.frame(sig@ppui.clus)
+colnames(tidy.ppui) <- gsub(x = colnames(tidy.ppui), 
+                            pattern = "_proximal_PUI", replacement = "")
+tidy.ppui <- tidyr::gather(data = tidy.ppui)
+colnames(tidy.ppui) <- c("Cluster", "value")
+p <- ggplot2::ggplot(data = tidy.ppui, 
+                     ggplot2::aes(x = value, color = Cluster))
+p <- p + ggplot2::stat_ecdf(size = 1)
+p <- p + ggplot2::theme_bw()
+p <- p + ggplot2::xlab("Proximal peak usage index")
+p <- p + ggplot2::ylab("Cumulative fraction")
+p <- p + ggplot2::coord_cartesian(xlim = c(-3, 4.1))
+print(p)
+```
+
+
+We can plot a tSNE coloring cells according to their mean proximal PUI, as follows:
+
+```{r tsne}
+mean_pui <- as.data.frame(results@ppui.cells)
+
+mean_pui$Cell_BC <- gsub(pattern = "_proximal_PUI", replacement = "", 
+                         x = rownames(mean_pui))
+colnames(mean_pui)[1] <- "Mean_Proximal_PUI"
+tsne <- merge(a@cluster.anot, mean_pui, by.x = "Cell_BC")
+require(gridExtra)
+colnames(tsne)[3:4] <- c("tsne1", "tsne2")
+              p <- ggplot2::ggplot(tsne, 
+                                   ggplot2::aes(x = tsne1 , 
+                                                y = tsne2, 
+                                                color = Mean_Proximal_PUI))
+              p <- p + ggplot2::geom_point(size=0.8)  
+              p <- p + ggplot2::xlab("tSNE1") + ggplot2::ylab("tSNE2") 
+              p <- p +  ggplot2::theme_bw()
+              p <- p+ ggplot2::scale_color_gradient(low = "blue",high = "red")
+              p <- p + ggplot2::ggtitle("tSNE mean proximal PUI")
+              g <- ggplot2::ggplot(tsne,  ggplot2::aes(x = tsne1, 
+                                                       y = tsne2, 
+                                                       color = Cell_Cluster))
+              g <- g + ggplot2::geom_point(size=0.8) 
+              g <- g+ ggplot2::xlab("tSNE1") + ggplot2::ylab("tSNE2") 
+              g <- g +  ggplot2::theme_bw()
+              g <- g + ggplot2::ggtitle("tSNE cell clusters")
+              gridExtra::grid.arrange(g, p, nrow = 1)
+
+```
+

@@ -18,7 +18,9 @@ Text files
 R files
 -------
 
-These are R object to be viewed with scAPA package can be used for viewing the results or for downstream analysis. \* **Peaks.RDS** an R scAPAList object. The object contains data regarding the peaks identified before filtering such as counts in the different clusters. See for more details. To read in R, load scAPA package and use R function readRDS(object = "Peaks.RDS")
+These are R object to be viewed with scAPA package can be used for viewing the results or for downstream analysis.
+
+-   **Peaks.RDS** an R scAPAList object. The object contains data regarding the peaks identified before filtering such as counts in the different clusters. See for more details. To read in R, load scAPA package and use R function readRDS(object = "Peaks.RDS")
 
 -   **Results.RDS (Results.int.RDS)** an R scAPAList object. The object contains data regarding APA analysis such as p-values, proximal (intronic) PUI, cell's mean proximal PUI. To read in R, load scAPA package and use R function readRDS(object = "Reasults.RDS")
 
