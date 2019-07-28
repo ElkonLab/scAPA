@@ -362,9 +362,8 @@ setMethod("[",
             if(nrow(x@pAi.cells) > 0) .subpAi.cells <- x@pAi.cells[i, ]
             .subppui.clus <- x@ppui.clus
             if(nrow(x@ppui.clus) > 0) .subppui.clus <- x@ppui.clus[i,]
-            .subppui.cells <- x@ppui.cells
             if(nrow(x@ppui.cells) > 0) {
-              .subppui.cells <- as.matrix(x@ppui.cells)
+              .subppui.cells <- x@ppui.cells
               } else .subppui.cells <- matrix()
             if(nrow(x@down.seq) > 0) {
               .subdown.seq <- x@down.seq[i,]
