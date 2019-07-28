@@ -887,3 +887,26 @@ setMethod("annotate_results",
             x
           })
 
+
+# plots -------------------------------------------------------------------
+
+setGeneric("Plot_prox.pui", function(x, min_x = NULL, max_x = NULL){
+  standardGeneric("Plot_prox.pui")
+})
+setMethod("Plot_prox.pui",
+          c(x = "scAPAresults"),
+          function(x, min_x, max_x){ tidy.ppui <- as.data.frame(x@ppui.clus)
+          colnames(tidy.ppui) <- gsub(x = colnames(tidy.ppui), 
+                            pattern = "_proximal_PUI", replacement = "")
+          tidy.ppui <- tidyr::gather(data = tidy.ppui)
+          p <- ggplot2::ggplot(data = tidy.ppui, 
+                     ggplot2::aes(x = value, color = key))
+          p <- p + ggplot2::stat_ecdf(size = 1)
+          p <- p + ggplot2::theme_bw()
+          p <- p + ggplot2::xlab("Proximal peak usage index")
+          p <- p + ggplot2::ylab("Cumulative fraction")
+          if((!is.null(min_x)) & (!is.null(max_x))) {
+          p <- p + ggplot2::coord_cartesian(xlim = c(min_x, max_x))
+          }
+          print(p)
+          })

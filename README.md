@@ -66,7 +66,7 @@ The shell script will perform all the following steps:
 
 ![.](Pic/PiplineDigram.png)
 
-For details regarding the individual steps. download the file [pipeline.description.pdf.](pipeline.description.pdf)
+For details regarding the individual steps, see [pipeline.description.pdf.](pipeline.description.pdf)
 
 Example for usage
 -----------------
@@ -109,6 +109,12 @@ For a full list of output files and their description, see the file [outputs.md]
 -   **UTRs.with.multiple.peaks.txt** a file containing the results of testing the differential usage of individual peaks across clusters. Only peaks from 3'UTR that came up significant in the analysis and had more than 2 peaks are analyzed. The file contains tables for each 3'UTR. The p-value and FDR q-value for each peak (from chi-square test for goodness of fit) are given. The peak usage index (PUI) for each cluster is given. Higher PUI in a cluster means higher usage of the peak in the cluster.
 
 -   **Mean.Cell.PPUI.txt** gives the mean proximal PUI index for the cells analyzed.
+
+-   **Peak.RDS** an R object of the unfiltered counts. Can be load in R and analyzed using scAPA package.
+
+![.](Pic/tsnes.png)
+
+For producing such plots, see package [vignette](scAPA_vignette.md).
 
 Log files
 ---------
