@@ -693,7 +693,7 @@ tidy.ppui <- tidyr::gather(data = tidy.ppui)
 colnames(tidy.ppui) <- c("Cluster", "value")
 pdf("./outs/Proximal.PUI.ECDF.pdf")
 p <- ggplot2::ggplot(data = tidy.ppui, 
-                     ggplot2::aes(x = value, color = key))
+                     ggplot2::aes(x = value, color = Cluster))
 p <- p + ggplot2::stat_ecdf(size = 1)
 p <- p + ggplot2::theme_bw()
 p <- p + ggplot2::xlab("Proximal peak usage index")
