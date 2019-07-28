@@ -339,7 +339,7 @@ setClass("scAPAresults",
                       pAi.clus = "matrix",
                       pAi.cells = "matrix",
                       ppui.clus = "matrix",
-                      ppui.cells = "matrix",
+                      ppui.cells = c("matrix","numeric"),
                       down.seq = "data.frame",
                       metadata = "data.frame"))
 
