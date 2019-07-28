@@ -15,6 +15,8 @@ Prerequisites
 7.  R version 3.5.3, or above.
 8.  Optional: [ChangePoint](https://sourceforge.net/projects/utr/files/), version 0.1.1
 
+In case they are not already installed, the script automatically installs its required R packages. If you would like the packages to be installed in another library other than your default one (e.g. if you do not have permissions to install packages in this library), specify the path to the alternative library when running the script (-loc = path/to/Rlibrary/).
+
 Installing
 ==========
 
@@ -54,49 +56,51 @@ Usage
 
 Run the script as follow:
 
-    ## path.to.R/bin/Rscript path.to.scAPAshellscript/scAPA.shell.script.R -p <path.to.files> -org <organism> -sp <path.to.script.dir> [options]
+    ## Rscript scAPA.shell.script.R -p <path.to.files> -org <organism> -sp <path.to.script.dir> [options]
 
 &lt;path.to.files&gt; is the path to the directory with BAM and cluster anotations tex files. Do not add / in the end of the path. -org The organism is either Mm for a mouse (mm10) or Hs for human (hg19). &lt;path.to.script.dir&gt; is the path to the scAPA.shell.script directory. For a list of options view the [Options.md](Options.md) file, or type:
 
-    ## path.to.R/bin/Rscript path.to.scAPAshellscript/scAPA.shell.script.R --help
+    ## Rscript scAPA.shell.script.R --help
 
 The shell script will perform all the following steps:
 
 ![.](Pic/PiplineDigram.png)
+
+For details regarding the individual steps. download the file [pipeline.description.pdf.](pipeline.description.pdf)
 
 Example for usage
 -----------------
 
 The files used for this example are from [Lukassen et al](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6132189/). The original fastq files can be obtined from [GSE104556](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE104556). **Please notice that the BAM files here have been down sampled, to contain 25% of the reads.** The result will differ from the results obtained from analyzing the full BAM files. Downlad the folder down.sampled.spermatogenesis from [this link](https://drive.google.com/open?id=1xK7lR2ECfJ-Cjb1f4bYnaA5JjYtdqrGA). After downloading and configuring scAPA.sell.script.R, use the following command:
 
-    ## Rscript path.to.scAPAshellscript/scAPA.shell.script.R -p path/to/down.sampled.spermatogenesis -org Mm -sp path/to/scAPA.shell.script
+    ## Rscript scAPA.shell.script.R -p path/to/down.sampled.spermatogenesis -org Mm -sp path/to/scAPA.shell.script
 
 By default, the script counts reads at a single-cell level. For faster analysis, count reads from cell clusters by using the "-sc false" option. The default number of cores to use is 30.
 
 ### Estimated Run Time
 
-Running the script on the example time with 30 cores, took approximately 11 hours. Bellow are estimated times (30 cores) for each stage of the analysis:
+Running the script on the example files with 30 cores, took approximately 11 hours. Bellow are estimated times (30 cores) for each step of the analysis:
 
--   **Stage 1a** PCR duplicates removal - approximately 2 hours and 30 minutes.
+-   **Step 1a** PCR duplicates removal - approximately 2 hours and 30 minutes.
 
--   **Stage 1b** Peak detection - aproximetly 45 minetes
+-   **Step 1b** Peak detection - aproximetly 45 minetes
 
--   **Stage 1c** Separating Peaks - approximately 3 hours.
+-   **Step 1c** Separating Peaks - approximately 3 hours.
 
--   **Stage 2** Quantifying the usage of each peak - approximately 4 hours.
+-   **Step 2** Quantifying the usage of each peak - approximately 4 hours.
 
 -   **Stage 3** Peak filtering - approximately 20 minutes.
 
--   **Stage 4** Statistical analysis - approximately 5 minutes.
+-   **Step 4** Statistical analysis - approximately 5 minutes.
 
--   **Stage 5** Inferring global trends - approximately 20 minutes.
+-   **Step 5** Inferring global trends - approximately 20 minutes.
 
 Output Files
 ------------
 
 For a full list of output files and their description, see the file [outputs.md](outputs.md) The following is a partial list of outputs:
 
--   **summary.UTR.txt (summary.UTR.txt)** A short summary of the 3'UTR peak analysis.
+-   **summary.UTR.txt (summary.Introns.txt)** A short summary of the 3'UTR peak analysis.
 
 -   **ThreeUTR.peaks.txt (Intron.peaks.tt)** The 3'UTR peaks that passed filtering. The file contains the peak ID, gene symbol, ensemble ID, and genomic location.
 
