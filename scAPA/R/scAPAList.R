@@ -209,7 +209,7 @@ setGeneric("calc_clusters_counts", function(exp.mat,cluster.anot){
 setMethod("calc_clusters_counts", c(exp.mat = "scAPAList"), function(exp.mat){
             x <- exp.mat
             .exp.mat <- x@cells.counts
-            .cluster.anot <- x@cluster.anot
+            .cluster.anot <- x@cluster.anot[,1:2]
             x@clus.counts <- calc_clusters_counts(exp.mat = .exp.mat,
                                                   cluster.anot=.cluster.anot)
             x

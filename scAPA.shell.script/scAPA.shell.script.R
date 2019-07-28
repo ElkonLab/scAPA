@@ -684,12 +684,13 @@ cat("Number of peaks passed fillter:\t", nrow(a.fil@clus.counts),
     file = "./outs/summary.UTR.txt")
 
 # Plot --------------------------------------------------------------------
-tidy.pui <- data.frame(Cluster = cluster, 
-                       Proximal.PUI = as.vector(results@ppui.clus))
-tidy.ppui <- as.data.frame(results@ppui.clus)
+sig.utrs <- as.vector(results@pvalues$all[,2] < 0.05)
+sig <- results[which(sig.utrs),]
+tidy.ppui <- as.data.frame(sig@ppui.clus)
 colnames(tidy.ppui) <- gsub(x = colnames(tidy.ppui), 
                             pattern = "_proximal_PUI", replacement = "")
 tidy.ppui <- tidyr::gather(data = tidy.ppui)
+colnames(tidy.ppui) <- c("Cluster", "value")
 pdf("./outs/Proximal.PUI.ECDF.pdf")
 p <- ggplot2::ggplot(data = tidy.ppui, 
                      ggplot2::aes(x = value, color = key))
@@ -751,9 +752,9 @@ if (int) {
         "\n", file = "./outs/summary.Introns.txt")
     
     # Plot --------------------------------------------------------------------
-    tidy.pui <- data.frame(Cluster = cluster, 
-                           Proximal.PUI = as.vector(results.int@ppui.clus))
-    tidy.ppui <- as.data.frame(results.int@ppui.clus)
+    sig.utrs <- as.vector(results.int@pvalues$all[,2] < 0.05)
+    sig <- results.int[which(sig.utrs),]
+    tidy.ppui <- as.data.frame(sig@ppui.clus)
     colnames(tidy.ppui) <- gsub(x = colnames(tidy.ppui), 
                                 pattern = "_proximal_PUI", replacement = "")
     tidy.ppui <- tidyr::gather(data = tidy.ppui)
