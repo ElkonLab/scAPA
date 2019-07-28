@@ -330,8 +330,7 @@ setMethod("plot_seq_pos_density",
 #' Rawnames are the peak ID. First column is p-value, second column is FDR orreted p-value.
 #' @slot .pAi.clus a matrix of pA index. rawnames are UTR IDs, columns are clusters.
 #' @slot pAi.cells Same as .pAi.clus, but columns are cells.
-#' @slot ppui.clus A matrix of proximal usage index (or )
-# Class definition --------------------------------------------------------
+#' @slot ppui.clus A matrix of proximal usage index (or intronic)
 setClass("scAPAresults",
          slots = list(clus.counts = "list", cells.counts = "list",
                       pvalues = "list",
