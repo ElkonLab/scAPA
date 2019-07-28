@@ -334,10 +334,10 @@ setMethod("plot_seq_pos_density",
             #  print(g)
             })
 
-# reasults ----------------------------------------------------------------
-#' Single cell RNA-seq 3'UTR or introns analysis reasults data.
+# results ----------------------------------------------------------------
+#' Single cell RNA-seq 3'UTR or introns analysis results data.
 #' 
-#' A list-based S4 class for storing the reasults of alternative polyadenilation (APA) analysis of
+#' A list-based S4 class for storing the results of alternative polyadenilation (APA) analysis of
 #' single-cell RNA sequencing data.
 #' 
 #' @slot .clus.counts a list. Each element is a data.frame corresponding to a 3'UTR/Inton ID. Columns are cell clusters, raws are
@@ -354,7 +354,7 @@ setMethod("plot_seq_pos_density",
 #' @slot pAi.cells Same as .pAi.clus, but columns are cells.
 #' @slot ppui.clus A matrix of proximal usage index (or )
 # Class definition --------------------------------------------------------
-setClass("scAPAreasults",
+setClass("scAPAresults",
          slots = list(clus.counts = "list", cells.counts = "list",
                       pvalues = "list",
                       peak.pvaues = "list",
@@ -365,15 +365,15 @@ setClass("scAPAreasults",
                       down.seq = "data.frame",
                       metadata = "data.frame"))
 
-setGeneric("set_scAPAreasults", function(x, int = F, cpm = NULL, counts){
-  standardGeneric("set_scAPAreasults")
+setGeneric("set_scAPAresults", function(x, int = F, cpm = NULL, counts){
+  standardGeneric("set_scAPAresults")
 })
 
 # Subsetting --------------------------------------------------------------
 setMethod("[",
-          c(x = "scAPAreasults"),
+          c(x = "scAPAresults"),
           function(x,i,j,drop="missing") {
-            if(is.character(i)) i <- which(names(reasults@clus.counts) %in% i)
+            if(is.character(i)) i <- which(names(results@clus.counts) %in% i)
             if(length(x@cells.counts) > 0) {
               .subcells.counts <- x@cells.counts[i]
             } else .subcells.counts <- list()
@@ -393,7 +393,7 @@ setMethod("[",
             peakstokeep <- as.character(unlist(peakstokeep))
             .submetadata <- x@metadata[which(x@metadata[,4] %in% peakstokeep),]
             .subpvalues <- lapply(x@pvalues, FUN = function(x){x[i,]})
-            methods::new("scAPAreasults", cells.counts = .subcells.counts,
+            methods::new("scAPAresults", cells.counts = .subcells.counts,
                          clus.counts = .subclus.counts,
                          pAi.clus = .subpAi.clus,
                          pAi.cells = .subpAi.cells, ppui.clus = .subppui.clus,
@@ -402,7 +402,7 @@ setMethod("[",
           })
 
 # Creat the object --------------------------------------------------------
-setMethod(f = "set_scAPAreasults", signature =  c(x = "scAPAList"),
+setMethod(f = "set_scAPAresults", signature =  c(x = "scAPAList"),
           definition = function(x, int, cpm, counts){
             if(!int){
               peakID <- x@clus.counts[,1]
@@ -418,7 +418,7 @@ setMethod(f = "set_scAPAreasults", signature =  c(x = "scAPAList"),
               peakstokeep <- as.character(unlist(peakstokeep))
               .metadata <- x@row.Data[which(x@row.Data[,4] %in% peakstokeep),]
               if(ncol(x@cells.counts) == 0){
-                out <- methods::new("scAPAreasults", clus.counts = clus.counts,
+                out <- methods::new("scAPAresults", clus.counts = clus.counts,
                                     cells.counts= list(), metadata = .metadata,
                                     down.seq = data.frame())
               } else{
@@ -431,7 +431,7 @@ setMethod(f = "set_scAPAreasults", signature =  c(x = "scAPAList"),
                 f.list.utr <- .clus.counts[row.n > 1]
                 .cells.counts <- f.list.utr
                 .peak.pvaues = list()
-                out <- methods::new("scAPAreasults", clus.counts = clus.counts,
+                out <- methods::new("scAPAresults", clus.counts = clus.counts,
                                     cells.counts= .cells.counts, 
                                     metadata = .metadata,
                                     down.seq = x@down.seq, 
@@ -545,7 +545,7 @@ setMethod(f = "set_scAPAreasults", signature =  c(x = "scAPAList"),
               .down.seq <- .down.seq[.down.seq$Peak_ID %in% names(.clus.counts),]
               .down.seq <- .down.seq[match(names(.clus.counts), 
                                            .down.seq$Peak_ID),]
-              out <- methods::new("scAPAreasults",
+              out <- methods::new("scAPAresults",
                                   clus.counts = .clus.counts,
                                   cells.counts= .cells.counts,
                                   metadata = .metadata,
@@ -556,16 +556,16 @@ setMethod(f = "set_scAPAreasults", signature =  c(x = "scAPAList"),
 
 # Show --------------------------------------------------------------------
 setMethod("show",
-          c(object = "scAPAreasults"),
+          c(object = "scAPAresults"),
           function(object) {
             if(length(object@cells.counts) > 0){
-              cat("an scAPA reasults object\n\n# 3' UTR with APA: ",
+              cat("an scAPA results object\n\n# 3' UTR with APA: ",
                   length(object@clus.counts), "\n# cells: ",
                   ncol(object@cells.counts[[1]]),"\n clusters: ",
                   colnames(object@clus.counts[[1]][-1]), "\n",
                   "metadata: ", colnames(object@metadata), "\n")
             } else {
-              cat("an scAPA reasults object\n\n# 3' UTR with APA:\t",
+              cat("an scAPA results object\n\n# 3' UTR with APA:\t",
                   length(object@clus.counts), "\no cell expression data",
                   "\nclusters:\t",
                   colnames(object@clus.counts[[1]][-1]), "\n")
@@ -586,12 +586,12 @@ setMethod("show",
           })
 
 setMethod("head",
-          c(x = "scAPAreasults"),
+          c(x = "scAPAresults"),
           function(x) {
             show(object = x)
           })
 setMethod("summary",
-          c(object = "scAPAreasults"),
+          c(object = "scAPAresults"),
           function(object) {
             show(object = object)
           })
@@ -601,7 +601,7 @@ setGeneric("test_APA", function(x, clus = "all"){
   standardGeneric("test_APA")
 })
 setMethod("test_APA",
-          c(x = "scAPAreasults"),
+          c(x = "scAPAresults"),
           function(x, clus) {
             names.pval <- paste0(clus, collapse = "_")
             x@pvalues <- c(x@pvalues, names.pval = matrix())
@@ -627,7 +627,7 @@ setMethod("test_APA",
 setGeneric("test_peaks", function(x, clus = "all", sig.level = 0.05){
   standardGeneric("test_peaks")
 })
-setMethod(f = "test_peaks", c(x = "scAPAreasults"),
+setMethod(f = "test_peaks", c(x = "scAPAresults"),
           function(x, clus, sig.level) {
             if(is.null(x@pvalues[[clus]])){
               mes <- paste0("P-values for the clusters were not calculated",
@@ -698,7 +698,7 @@ setGeneric("calc_pAi_mat", function(x){
 })
 
 setMethod("calc_pAi_mat",
-          c(x = "scAPAreasults"),
+          c(x = "scAPAresults"),
           function(x) {
             x@pAi.clus <- calc_pAi_mat(x = x@clus.counts)
             if(length(x@cells.counts) > 0){
@@ -729,7 +729,7 @@ setGeneric("calc_p_pui_mat", function(x, psudo =1, int = FALSE){
   ppui.mat
 })
 setMethod("calc_p_pui_mat",
-          c(x = "scAPAreasults"),
+          c(x = "scAPAresults"),
           function(x, psudo, int) {
             x@ppui.clus <- calc_p_pui_mat(x = x@clus.counts,
                                           psudo = psudo)
@@ -752,13 +752,13 @@ setMethod("calc_p_pui_mat",
           })
 
 
-# Summarise reasults ------------------------------------------------------
+# Summarise results ------------------------------------------------------
 
-setGeneric("disply_reasults", function(x, org, int = FALSE){
-  standardGeneric("disply_reasults")
+setGeneric("disply_results", function(x, org, int = FALSE){
+  standardGeneric("disply_results")
 })
-setMethod("disply_reasults",
-          c(x = "scAPAreasults"),
+setMethod("disply_results",
+          c(x = "scAPAresults"),
           function(x, org, int){
             if(org == "Mm") annot <- mmanots
             if(org == "Hs") annot <- hsanots
@@ -799,7 +799,7 @@ setGeneric("find_internal_prim_seq", function(x, int.priming.seq, left, right){
   standardGeneric("find_internal_prim_seq")
 })
 setMethod("find_internal_prim_seq",
-          c(x = "scAPAreasults"),
+          c(x = "scAPAresults"),
           function(x, int.priming.seq, left, right){
             .down.seq.data <- split(x = as.character(x@down.seq[,2]),
                                     f = x@down.seq[,1])
@@ -817,7 +817,7 @@ setMethod("find_internal_prim_seq",
           })
 # Internal primming -------------------------------------------------------
 setMethod("filter_IP",
-          c(x = "scAPAreasults"),
+          c(x = "scAPAresults"),
           function(x, int.priming.seq, left, right){
             .down.seq.data <- split(x = as.character(x@down.seq[,2]),
                                     f = x@down.seq[,1])
@@ -842,7 +842,7 @@ setGeneric("write.peaks", function(.x, .f){
 })
 
 setMethod("write.peaks",
-          c(.x = "scAPAreasults"),
+          c(.x = "scAPAresults"),
           function(.x, .f){
             if (org == "Mm") ano <- mmanots
             if(org == "Hs") ano <- hsanots
@@ -870,11 +870,11 @@ setMethod("write.peaks",
 
 # anotate -----------------------------------------------------------------
 
-setGeneric("annotate_reasults", function(x, org){
-  standardGeneric("annotate_reasults")
+setGeneric("annotate_results", function(x, org){
+  standardGeneric("annotate_results")
 })
-setMethod("annotate_reasults",
-          c(x = "scAPAreasults"),
+setMethod("annotate_results",
+          c(x = "scAPAresults"),
           function(x, org){
             if(org == "Mm") annot <- mmanots
             if(org == "Hs") annot <- hsanots

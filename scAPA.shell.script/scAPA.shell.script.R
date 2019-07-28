@@ -639,25 +639,25 @@ a.fil <- filter_IP(x = a.fil, int.priming.seq = IP.seq,
 # Statistical analysis ----------------------------------------------------
 write_log_start("Stage 4: Statistical analysis (3'UTRs)\n\n", 
                 command = NA, f = "../scAPA.script.log")
-reasults <- set_scAPAreasults(a.fil)
+results <- set_scAPAresults(a.fil)
 # Chi-squre test for APA
-reasults <- test_APA(reasults, clus = "all")
+results <- test_APA(results, clus = "all")
 # For APA with more than one peak and whose p-value is < sig.level, 
 # perform chi-squered test for goodness of fit
-reasults <- test_peaks(reasults, clus = "all", sig.level = 0.05)
+results <- test_peaks(results, clus = "all", sig.level = 0.05)
 
 # Inferring global trends -------------------------------------------------
 write_log_start("Stage 5: Inferring global trends  (3'UTRs)\n\n", command = NA,
                 f = "../scAPA.script.log")
-reasults <- calc_pAi_mat(reasults)
-reasults <- calc_p_pui_mat(reasults)
-saveRDS(object = reasults, file = "../outs/Reasults.RDS")
+results <- calc_pAi_mat(results)
+results <- calc_p_pui_mat(results)
+saveRDS(object = results, file = "../outs/results.RDS")
 
 # Write final outputs -----------------------------------------------------
 setwd("../")
-reasults.output <- disply_reasults(x = reasults, org = org)
+results.output <- disply_results(x = results, org = org)
 a.fil <- annotate(a.fil, org = org)
-cells_pui <- as.data.frame(reasults@ppui.cells)
+cells_pui <- as.data.frame(results@ppui.cells)
 cells_pui$cell <- gsub(pattern = "_proximal_PUI", replacement = "",
                        x = rownames(cells_pui))
 cells_pui$sample <- gsub(pattern = "_.*", replacement = "",
@@ -669,25 +669,25 @@ colnames(cells_pui) <- c("Sample", "Cell_BC", "Mean_Proximal_PUI")
 write.table(x = cells_pui, file = "./outs/Mean.Cell.PPUI.txt",
             quote = F, sep = "\t", col.names = T, row.names = F)
 
-write.table(x = reasults.output, file = "./outs/APA.events.txt", 
+write.table(x = results.output, file = "./outs/APA.events.txt", 
             quote = F, sep = "\t", col.names = T, row.names = F)
 
 write.table(x = a.fil@row.Data, file = "./outs/ThreeUTR.peaks.txt", 
             quote = F, sep = "\t", col.names = T, row.names = F)
 
-write.peaks(.x = reasults, .f = "./outs/UTRs.with.multiple.peaks.txt")
+write.peaks(.x = results, .f = "./outs/UTRs.with.multiple.peaks.txt")
 
-file.create("./outs/summary.txt")
+file.create("./outs/summary.UTR.txt")
 cat("Number of peaks passed fillter:\t", nrow(a.fil@clus.counts), 
     "\nNumber of significant (FDR < 5%) APA events:", 
-    sum(reasults@pvalues[[1]][, 2] < 0.05, na.rm = T), "\n",
+    sum(results@pvalues[[1]][, 2] < 0.05, na.rm = T), "\n",
     file = "./outs/summary.UTR.txt")
 
 # Plot --------------------------------------------------------------------
-cluster <- gsub(x = reasults@ppui.clus, pattern = "_<pA>", replacement = "")
+cluster <- gsub(x = results@ppui.clus, pattern = "_<pA>", replacement = "")
 tidy.pui <- data.frame(Cluster = cluster, 
-                       Proximal.PUI = as.vector(reasults@ppui.clus))
-tidy.ppui <- as.data.frame(reasults@ppui.clus)
+                       Proximal.PUI = as.vector(results@ppui.clus))
+tidy.ppui <- as.data.frame(results@ppui.clus)
 colnames(tidy.ppui) <- gsub(x = colnames(tidy.ppui), 
                             pattern = "_proximal_PUI", replacement = "")
 tidy.ppui <- tidyr::gather(data = tidy.ppui)
@@ -706,14 +706,13 @@ dev.off()
 write_log_start("Stage 3: Peak filtering (introns)\n\n",
                 command = NA, f = "../scAPA.script.log")
 if (int) {
-    if (sc) 
-        a <- calc_clusters_counts(a)
-    reasults <- set_scAPAreasults(x = a, int = T, cpm = ICPM.cuttoff,
+    if (sc) a.int <- calc_clusters_counts(a.int)
+    results.int <- set_scAPAresults(x = a.int, int = T, cpm = ICPM.cuttoff,
                                   counts = IC.cuttoff)
     
     # Internal priming filtering
     IP.seq.I <- paste0(rep("A", times = IA.number), collapse = "")
-    reasults <- filter_IP(x = reasults, int.priming.seq = IP.seq.I, 
+    results.int <- filter_IP(x = results.int, int.priming.seq = IP.seq.I, 
                           left = Ifilter.border.left, 
                           right = Ifilter.border.right)
     
@@ -721,17 +720,17 @@ if (int) {
     write_log_start("Stage 4: Statistical analysis (introns)\n\n", 
                     command = NA, f = "../scAPA.script.log")
     # Chi-squre test for APA
-    reasults <- test_APA(reasults, clus = "all")
+    results.int <- test_APA(results.int, clus = "all")
     # Inferring global trends -------------------------------------------------
     write_log_start("Stage 5: Inferring global trends  (introns)\n\n", 
                     command = NA, f = "../scAPA.script.log")
-    reasults <- calc_p_pui_mat(reasults)
-    saveRDS(object = reasults, file = "./outs/Reasults_introns.RDS")
+    results.int <- calc_p_pui_mat(results.int)
+    saveRDS(object = results.int, file = "./outs/results_introns.RDS")
     
     # Write final outputs -----------------------------------------------------
-    reasults.output <- disply_reasults(x = reasults, org = org, int = T)
-    reasults <- annotate_reasults(reasults, org = org)
-    cells_pui <- as.data.frame(reasults@ppui.cells)
+    results.int.output <- disply_results(x = results.int, org = org, int = T)
+    results.int <- annotate_results(results.int, org = org)
+    cells_pui <- as.data.frame(results.int@ppui.cells)
     cells_pui$cell <- gsub(pattern = "_proximal_PUI", replacement = "",
                            x = rownames(cells_pui))
     cells_pui$sample <- gsub(pattern = "_.*", replacement = "", 
@@ -742,22 +741,22 @@ if (int) {
     colnames(cells_pui) <- c("Sample", "Cell_BC", "Mean_intronic_PUI")
     write.table(x = cells_pui, file = "./outs/Intronic.Mean.Cell.IPUI.txt",
                 quote = F, sep = "\t", col.names = T, row.names = F)
-    write.table(x = reasults.output, file = "./outs/Intronic.APA.events.txt", 
+    write.table(x = results.int.output, file = "./outs/Intronic.APA.events.txt", 
                 quote = F, sep = "\t", col.names = T, row.names = F)
-    write.table(x = reasults@metadata, file = "./outs/Intronic.peaks.txt",
+    write.table(x = results.int@metadata, file = "./outs/Intronic.peaks.txt",
                 quote = F, sep = "\t", col.names = T, row.names = F)
-    file.create("./outs/summary.txt")
+    file.create("./outs/summary.Introns.txt")
     cat("Number of peaks passed fillter:\t", nrow(a.fil@clus.counts), 
         "\nNumber of significant (FDR < 5%) APA events:", 
-        sum(reasults@pvalues[[1]][, 2] < 0.05, na.rm = T), 
-        "\n", file = "./outs/summary.UTR.txt")
+        sum(results.int@pvalues[[1]][, 2] < 0.05, na.rm = T), 
+        "\n", file = "./outs/summary.Introns.txt")
     
     # Plot --------------------------------------------------------------------
-    cluster <- gsub(x = reasults@ppui.clus, pattern = "_<pA>", 
+    cluster <- gsub(x = results.int@ppui.clus, pattern = "_<pA>", 
                     replacement = "")
     tidy.pui <- data.frame(Cluster = cluster, 
-                           Proximal.PUI = as.vector(reasults@ppui.clus))
-    tidy.ppui <- as.data.frame(reasults@ppui.clus)
+                           Proximal.PUI = as.vector(results.int@ppui.clus))
+    tidy.ppui <- as.data.frame(results.int@ppui.clus)
     colnames(tidy.ppui) <- gsub(x = colnames(tidy.ppui), 
                                 pattern = "_proximal_PUI", replacement = "")
     tidy.ppui <- tidyr::gather(data = tidy.ppui)
