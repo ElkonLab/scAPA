@@ -238,7 +238,7 @@ setMethod("calc_cpm",
             x
           })
 
-# Internal primming -------------------------------------------------------
+# Internal priming -------------------------------------------------------
 #'Filter peaks that may stem from internal priming.
 #'
 #'Filter out peaks that may stem from internal priming.
@@ -255,29 +255,7 @@ setMethod("calc_cpm",
 setGeneric("filter_IP", function(x, int.priming.seq, left, right){
   standardGeneric("filter_IP")
 })
-setMethod("filter_IP",
-          c(x = "scAPAList"),
-          function(x, int.priming.seq, left, right){
-            .down.seq.data <- split(x = as.character(x@down.seq[,2]),
-                                    f = x@down.seq[,1])
-            list_pos <- function(x, .int.priming.seq = int.priming.seq){
-            gregexpr(pattern  = .int.priming.seq, text = x)
-            }
-            pos <- lapply(FUN = list_pos, X = .down.seq.data)
-            pos <- lapply(X = pos, FUN = unlist)
-            tofilter <- lapply(X = pos, 
-                               FUN = function(x){
-                                 any((x < right) & (x > left))})
-            tofilter <- unlist(tofilter)
-            tofilter <- data.frame(Peak_ID = names(tofilter), 
-                                   has_seq = tofilter)
-            tofilter <- tofilter[match(x@clus.counts[,1], 
-                                       tofilter[,1]),]
-            rownames(tofilter) <- NULL
-            keep.int.pr <- as.vector(!tofilter[,2])
-            x <- x[which(keep.int.pr),]
-            x
-          })
+
 # Annotate ----------------------------------------------------------------
 setGeneric("annotate", function(x, org){
   standardGeneric("annotate")
@@ -835,7 +813,29 @@ setMethod("filter_IP",
             x <- x[which(keep.int.pr),]
             x
           })
-
+setMethod("filter_IP",
+          c(x = "scAPAList"),
+          function(x, int.priming.seq, left, right){
+            .down.seq.data <- split(x = as.character(x@down.seq[,2]),
+                                    f = x@down.seq[,1])
+            list_pos <- function(x, .int.priming.seq = int.priming.seq){
+              gregexpr(pattern  = .int.priming.seq, text = x)
+            }
+            pos <- lapply(FUN = list_pos, X = .down.seq.data)
+            pos <- lapply(X = pos, FUN = unlist)
+            tofilter <- lapply(X = pos, 
+                               FUN = function(x){
+                                 any((x < right) & (x > left))})
+            tofilter <- unlist(tofilter)
+            tofilter <- data.frame(Peak_ID = names(tofilter), 
+                                   has_seq = tofilter)
+            tofilter <- tofilter[match(x@clus.counts[,1], 
+                                       tofilter[,1]),]
+            rownames(tofilter) <- NULL
+            keep.int.pr <- as.vector(!tofilter[,2])
+            x <- x[which(keep.int.pr),]
+            x
+          })
 # Write peaks pvalues -----------------------------------------------------
 setGeneric("write.peaks", function(.x, .f){
   standardGeneric("write.peaks")
