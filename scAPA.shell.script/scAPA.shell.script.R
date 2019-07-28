@@ -746,7 +746,7 @@ if (int) {
     write.table(x = results.int@metadata, file = "./outs/Intronic.peaks.txt",
                 quote = F, sep = "\t", col.names = T, row.names = F)
     file.create("./outs/summary.Introns.txt")
-    cat("Number of peaks passed fillter:\t", nrow(a.fil@clus.counts), 
+    cat("Number of peaks passed fillter:\t", length(results.int@clus.counts), 
         "\nNumber of significant (FDR < 5%) APA events:", 
         sum(results.int@pvalues[[1]][, 2] < 0.05, na.rm = T), 
         "\n", file = "./outs/summary.Introns.txt")
