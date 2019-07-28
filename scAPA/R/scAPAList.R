@@ -339,7 +339,7 @@ setClass("scAPAresults",
                       pAi.clus = "matrix",
                       pAi.cells = "matrix",
                       ppui.clus = "matrix",
-                      ppui.cells = c("matrix","numeric"),
+                      ppui.cells = "matrix",
                       down.seq = "data.frame",
                       metadata = "data.frame"))
 
@@ -362,9 +362,6 @@ setMethod("[",
             if(nrow(x@pAi.cells) > 0) .subpAi.cells <- x@pAi.cells[i, ]
             .subppui.clus <- x@ppui.clus
             if(nrow(x@ppui.clus) > 0) .subppui.clus <- x@ppui.clus[i,]
-            if(nrow(x@ppui.cells) > 0) {
-              .subppui.cells <- x@ppui.cells
-              } else .subppui.cells <- matrix()
             if(nrow(x@down.seq) > 0) {
               .subdown.seq <- x@down.seq[i,]
             } else .subdown.seq <- data.frame()
@@ -376,7 +373,7 @@ setMethod("[",
                          clus.counts = .subclus.counts,
                          pAi.clus = .subpAi.clus,
                          pAi.cells = .subpAi.cells, ppui.clus = .subppui.clus,
-                         ppui.cells = .subppui.cells,
+                         ppui.cells = x@ppui.cells,
                          metadata = .submetadata, pvalues = .subpvalues)
           })
 
