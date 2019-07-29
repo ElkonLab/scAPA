@@ -1,5 +1,5 @@
 ---
-title: "scAPA packege vignette"
+title: "scAPA package vignette"
 output: rmarkdown::github_document
 ---
 
@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Install and load scAPA package.
 
-```{r load packeges, echo=FALSE}
+```{r load packeges}
 if(!require(devtools)) install.packages("devtools")
 require(devtools)
 if(!require(scAPA)) devtools::install_github("ElkonLab/scAPA/scAPA") 
@@ -31,7 +31,6 @@ The object contains the following:
 * The peak count matrix:
 ```{r show count matrix, echo=T}
 head(a@cells.counts[,1:3])
-
 ```
 rows are peaks, and columns are cell clusters.
 
@@ -58,7 +57,7 @@ First, calculate the sum of the counts from each peak in each cell cluster.
 a <- calc_clusters_counts(a)
 a
 ```
-
+This steop is required if the option sc was specified in scAPA.shell.scipt. If sc = false, clusters' counts have already been calculated.
 
 ##Peak filtering
 
@@ -68,7 +67,7 @@ First, we calculate the peak counts-per-million (CPM) peak cluster matrix.
 a <- calc_cpm(a)
 head(a@norm$CPM)
 ```
-Then, only peaks whose total sum over all cell clusters is above a certion CPMs threshhold are considered. Here we choose 10 as the threshhold:  
+Then, only peaks whose total sum over all cell clusters is above a certion CPMs threshold are considered. Here we choose 10 as the threshhold:  
 
 ```{r filter law CPMs}
 keep.cpm <- rowSums(a@norm$CPM) > 10
@@ -104,7 +103,7 @@ results
 results@clus.counts[1:2]
 ```
 
-An analogous list is calculated for the slot
+An analogous list is calculated for the 'cells.counts' slot:
 ```{r show results cells.counts}
 results@cells.counts[[1]][,1:3]
 ```
@@ -114,11 +113,10 @@ Here each column is a cell.
 
 ```{r test_APA}
 results <- test_APA(results, clus = "all")
-
 head(results@pvalues$all)
 ```
 
-The clus argument specifies the clusters to be tested. Default is "all" for all cluster. specify, for example, clus = c("ES", "RS") to test ES vs RS cluster.
+The clus argument specifies the clusters to be tested. Default is "all" for all cluster. specify, for example, clus = c("ES", "RS") to test ES vs RS.
 
 * For 3' UTR with more than two peaks that show significant usage change, for each peak i, chi-square test for goodness of fit is performed. The threshold for significant change is set by the argument sig.level (FDR value)
 
@@ -126,7 +124,7 @@ The clus argument specifies the clusters to be tested. Default is "all" for all 
 results <- test_peaks(results, clus = "all", sig.level = 0.05)
 ```
 
-We get a slot with such peaks (p-values, q-values and peak PUI for each cluster).
+We get a slot 'peak.pvaues' with such peaks (p-values, q-values and peak PUI for each cluster).
 
 ```{r}
 head(results@peak.pvaues$Peaks_all)
@@ -138,12 +136,19 @@ head(results@peak.pvaues$Peaks_all)
 
 ```{r calc_p_pui_mat}
 results <- calc_p_pui_mat(results)
-
 head(results@ppui.clus)
 ```
 
-This function also creates an object, where for each cell, the mean PUI index is calculated.
+This function also creates a slot 'pui.cells' with the mean PUI index is calculated.
 
+```{r ppui.cells}
+head(results@ppui.cells)
+```
+
+Typing the name of the scAPAresult object in R now will show a summary of the results:
+```{r summary}
+results
+```
 * We can creat a scAPAresults object called sig containing only 3'UTR with significant APA events. 
 ```{r significants}
 sig.utrs <- as.vector(results@pvalues$all[,2] < 0.05)
@@ -151,7 +156,7 @@ sig <- results[which(sig.utrs),]
 ```
 
 Plot the cumulative distribution function of the proximal PUI of the significant 3'UTRs:
-```{r plot ppui}
+```{r plot ppui, width = 4}
 tidy.ppui <- as.data.frame(sig@ppui.clus)
 colnames(tidy.ppui) <- gsub(x = colnames(tidy.ppui), 
                             pattern = "_proximal_PUI", replacement = "")
@@ -167,7 +172,6 @@ p <- p + ggplot2::coord_cartesian(xlim = c(-3, 4.1))
 print(p)
 ```
 
-
 We can plot a tSNE coloring cells according to their mean proximal PUI, as follows:
 
 ```{r tsne}
@@ -175,26 +179,28 @@ mean_pui <- as.data.frame(results@ppui.cells)
 
 mean_pui$Cell_BC <- gsub(pattern = "_proximal_PUI", replacement = "", 
                          x = rownames(mean_pui))
-colnames(mean_pui)[1] <- "Mean_Proximal_PUI"
+colnames(mean_pui)[1] <- "Mean Proximal PUI"
 tsne <- merge(a@cluster.anot, mean_pui, by.x = "Cell_BC")
 require(gridExtra)
-colnames(tsne)[3:4] <- c("tsne1", "tsne2")
+colnames(tsne)[2:4] <- c("Cell Cluster", "tsne1", "tsne2")
               p <- ggplot2::ggplot(tsne, 
                                    ggplot2::aes(x = tsne1 , 
                                                 y = tsne2, 
-                                                color = Mean_Proximal_PUI))
+                                                color = `Mean Proximal PUI`))
               p <- p + ggplot2::geom_point(size=0.8)  
               p <- p + ggplot2::xlab("tSNE1") + ggplot2::ylab("tSNE2") 
               p <- p +  ggplot2::theme_bw()
               p <- p+ ggplot2::scale_color_gradient(low = "blue",high = "red")
               p <- p + ggplot2::ggtitle("tSNE mean proximal PUI")
+              p <- p + ggplot2::theme(legend.position="top")
               g <- ggplot2::ggplot(tsne,  ggplot2::aes(x = tsne1, 
                                                        y = tsne2, 
-                                                       color = Cell_Cluster))
+                                                       color = `Cell Cluster`))
               g <- g + ggplot2::geom_point(size=0.8) 
               g <- g+ ggplot2::xlab("tSNE1") + ggplot2::ylab("tSNE2") 
               g <- g +  ggplot2::theme_bw()
               g <- g + ggplot2::ggtitle("tSNE cell clusters")
+              g <- g + ggplot2::theme(legend.position="top")
               gridExtra::grid.arrange(g, p, nrow = 1)
 
 ```

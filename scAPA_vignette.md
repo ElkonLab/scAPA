@@ -1,13 +1,26 @@
-scAPA packege vignette
+scAPA package vignette
 ================
 
 Install and load scAPA package.
+
+``` r
+if(!require(devtools)) install.packages("devtools")
+```
 
     ## Loading required package: devtools
 
     ## Loading required package: usethis
 
+``` r
+require(devtools)
+if(!require(scAPA)) devtools::install_github("ElkonLab/scAPA/scAPA") 
+```
+
     ## Loading required package: scAPA
+
+``` r
+require(scAPA)
+```
 
 The files used for this example are the results of scAPA analysis of data from [Lukassen et al](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6132189/).
 
@@ -96,7 +109,7 @@ head(a@row.Data)
     ## 5   X 161256711 161256833 ENSMUSG00000000037.16_2_2    123      +
     ## 6  11 108414266 108414399 ENSMUSG00000000049.11_1_1    134      +
 
-First, calculate the sum of the counts fro each peak in each cell cluster.
+First, calculate the sum of the counts from each peak in each cell cluster.
 
 ``` r
 a <- calc_clusters_counts(a)
@@ -117,6 +130,8 @@ a
     ## 5 ENSMUSG00000000037.16_2_2   1    7   5
     ## 6 ENSMUSG00000000049.11_1_1 208 1017  51
 
+This steop is required if the option sc was specified in scAPA.shell.scipt. If sc = false, clusters' counts have already been calculated.
+
 Peak filtering
 --------------
 
@@ -127,15 +142,15 @@ a <- calc_cpm(a)
 head(a@norm$CPM)
 ```
 
-    ##              ES         RS         SC
-    ## [1,]  1.0919381  8.6780479  9.3395872
-    ## [2,]  1.8198968  4.2268078 14.2085663
-    ## [3,]  1.8198968  8.2665887 14.7839911
-    ## [4,]  0.1819897  2.0572958  0.3983710
-    ## [5,]  0.1819897  0.2618377  0.2213172
-    ## [6,] 37.8538539 38.0412703  2.2574358
+    ##                                   ES         RS         SC
+    ## ENSMUSG00000000001.4_1_1   1.0919381  8.6780479  9.3395872
+    ## ENSMUSG00000000001.4_1_2   1.8198968  4.2268078 14.2085663
+    ## ENSMUSG00000000028.15_1_1  1.8198968  8.2665887 14.7839911
+    ## ENSMUSG00000000037.16_2_1  0.1819897  2.0572958  0.3983710
+    ## ENSMUSG00000000037.16_2_2  0.1819897  0.2618377  0.2213172
+    ## ENSMUSG00000000049.11_1_1 37.8538539 38.0412703  2.2574358
 
-Then, only peaks whose total sum over all cell clusters is above a certion CPMs threshhold are considered. Here we choose 10 as the threshhold:
+Then, only peaks whose total sum over all cell clusters is above a certion CPMs threshold are considered. Here we choose 10 as the threshhold:
 
 ``` r
 keep.cpm <- rowSums(a@norm$CPM) > 10
@@ -215,7 +230,7 @@ results@clus.counts[1:2]
     ## ENSMUSG00000000127.14_1_1          1 49 883 970
     ## ENSMUSG00000000127.14_1_2          2  3 129 124
 
-An analogous list is calculated for the slot
+An analogous list is calculated for the 'cells.counts' slot:
 
 ``` r
 results@cells.counts[[1]][,1:3]
@@ -234,7 +249,6 @@ Here each column is a cell.
 
 ``` r
 results <- test_APA(results, clus = "all")
-
 head(results@pvalues$all)
 ```
 
@@ -246,7 +260,7 @@ head(results@pvalues$all)
     ## ENSMUSG00000000282.12_1 1.141420e-22 9.496611e-20
     ## ENSMUSG00000000346.9_1  4.410919e-38 4.406508e-35
 
-The clus argument specifies the clusters to be tested. Default is "all" for all cluster. specify, for example, clus = c("ES", "RS") to test ES vs RS cluster.
+The clus argument specifies the clusters to be tested. Default is "all" for all cluster. specify, for example, clus = c("ES", "RS") to test ES vs RS.
 
 -   For 3' UTR with more than two peaks that show significant usage change, for each peak i, chi-square test for goodness of fit is performed. The threshold for significant change is set by the argument sig.level (FDR value)
 
@@ -254,7 +268,7 @@ The clus argument specifies the clusters to be tested. Default is "all" for all 
 results <- test_peaks(results, clus = "all", sig.level = 0.05)
 ```
 
-We get a slot with such peaks (p-values, q-values and peak PUI for each cluster).
+We get a slot 'peak.pvaues' with such peaks (p-values, q-values and peak PUI for each cluster).
 
 ``` r
 head(results@peak.pvaues$Peaks_all)
@@ -282,7 +296,6 @@ Inferring global trends of APA modulation
 
 ``` r
 results <- calc_p_pui_mat(results)
-
 head(results@ppui.clus)
 ```
 
@@ -294,7 +307,43 @@ head(results@ppui.clus)
     ## ENSMUSG00000000282.12_1       0.4717082      -0.9529690      -2.1937010
     ## ENSMUSG00000000346.9_1        1.5849625      -0.3130641      -0.6727026
 
-This function also creates an object, where for each cell, the mean PUI index is calculated.
+This function also creates a slot 'pui.cells' with the mean PUI index is calculated.
+
+``` r
+head(results@ppui.cells)
+```
+
+    ##                                            Mean_proximal_PUI
+    ## SRR6129050_AAACCTGAGCTTATCG-1_proximal_PUI        0.08051117
+    ## SRR6129050_AAACCTGGTTGAGTTC-1_proximal_PUI        0.08908543
+    ## SRR6129050_AAACCTGTCAACGAAA-1_proximal_PUI        0.29173057
+    ## SRR6129050_AAACGGGCACAGGTTT-1_proximal_PUI        0.27647437
+    ## SRR6129050_AAACGGGTCATTTGGG-1_proximal_PUI        0.30304206
+    ## SRR6129050_AAACGGGTCCTCATTA-1_proximal_PUI        0.36644582
+
+Typing the name of the scAPAresult object in R now will show a summary of the results:
+
+``` r
+results
+```
+
+    ## an scAPA results object
+    ## 
+    ## # 3' UTR with APA:  1644 
+    ## # cells:  2043 
+    ##  clusters:  ES RS SC 
+    ##  metadata:  Chr Start End GeneID Length Strand 
+    ## # significant (FDR < 5%) APA events:  1193 
+    ## 
+    ## proximal peak usage index summary:
+    ##  ES_proximal_PUI    RS_proximal_PUI   SC_proximal_PUI  
+    ##  Min.   :-2.85022   Min.   :-2.6528   Min.   :-4.6368  
+    ##  1st Qu.:-0.09633   1st Qu.:-0.6789   1st Qu.:-1.1530  
+    ##  Median : 0.90368   Median : 0.1518   Median :-0.4241  
+    ##  Mean   : 0.91666   Mean   : 0.1753   Mean   :-0.4086  
+    ##  3rd Qu.: 1.89897   3rd Qu.: 0.9957   3rd Qu.: 0.2899  
+    ##  Max.   : 5.22199   Max.   : 4.3779   Max.   : 3.7851  
+    ##  NA's   :1
 
 -   We can creat a scAPAresults object called sig containing only 3'UTR with significant APA events.
 
@@ -321,7 +370,7 @@ p <- p + ggplot2::coord_cartesian(xlim = c(-3, 4.1))
 print(p)
 ```
 
-![](Pic/p.pui.png)
+![](scAPA_vignette_files/figure-markdown_github/plot%20ppui-1.png) ![](Pic/p.pui.png)
 
 We can plot a tSNE coloring cells according to their mean proximal PUI, as follows:
 
@@ -330,7 +379,7 @@ mean_pui <- as.data.frame(results@ppui.cells)
 
 mean_pui$Cell_BC <- gsub(pattern = "_proximal_PUI", replacement = "", 
                          x = rownames(mean_pui))
-colnames(mean_pui)[1] <- "Mean_Proximal_PUI"
+colnames(mean_pui)[1] <- "Mean Proximal PUI"
 tsne <- merge(a@cluster.anot, mean_pui, by.x = "Cell_BC")
 require(gridExtra)
 ```
@@ -338,24 +387,26 @@ require(gridExtra)
     ## Loading required package: gridExtra
 
 ``` r
-colnames(tsne)[3:4] <- c("tsne1", "tsne2")
+colnames(tsne)[2:4] <- c("Cell Cluster", "tsne1", "tsne2")
               p <- ggplot2::ggplot(tsne, 
                                    ggplot2::aes(x = tsne1 , 
                                                 y = tsne2, 
-                                                color = Mean_Proximal_PUI))
+                                                color = `Mean Proximal PUI`))
               p <- p + ggplot2::geom_point(size=0.8)  
               p <- p + ggplot2::xlab("tSNE1") + ggplot2::ylab("tSNE2") 
               p <- p +  ggplot2::theme_bw()
               p <- p+ ggplot2::scale_color_gradient(low = "blue",high = "red")
               p <- p + ggplot2::ggtitle("tSNE mean proximal PUI")
+              p <- p + ggplot2::theme(legend.position="top")
               g <- ggplot2::ggplot(tsne,  ggplot2::aes(x = tsne1, 
                                                        y = tsne2, 
-                                                       color = Cell_Cluster))
+                                                       color = `Cell Cluster`))
               g <- g + ggplot2::geom_point(size=0.8) 
               g <- g+ ggplot2::xlab("tSNE1") + ggplot2::ylab("tSNE2") 
               g <- g +  ggplot2::theme_bw()
               g <- g + ggplot2::ggtitle("tSNE cell clusters")
+              g <- g + ggplot2::theme(legend.position="top")
               gridExtra::grid.arrange(g, p, nrow = 1)
 ```
 
-![](Pic/tsnes.png)
+![](scAPA_vignette_files/figure-markdown_github/tsne-1.png) ![](Pic/tsnes.png)
