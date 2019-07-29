@@ -657,6 +657,7 @@ saveRDS(object = results, file = "../outs/results.RDS")
 setwd("../")
 results.output <- disply_results(x = results, org = org)
 a.fil <- annotate(a.fil, org = org)
+if(sc){
 cells_pui <- as.data.frame(results@ppui.cells)
 cells_pui$cell <- gsub(pattern = "_proximal_PUI", replacement = "",
                        x = rownames(cells_pui))
@@ -668,7 +669,7 @@ cells_pui <- cells_pui[, c(3, 2, 1)]
 colnames(cells_pui) <- c("Sample", "Cell_BC", "Mean_Proximal_PUI")
 write.table(x = cells_pui, file = "./outs/Mean.Cell.PPUI.txt",
             quote = F, sep = "\t", col.names = T, row.names = F)
-
+}
 write.table(x = results.output, file = "./outs/APA.events.txt", 
             quote = F, sep = "\t", col.names = T, row.names = F)
 
@@ -730,6 +731,7 @@ if (int) {
     # Write final outputs -----------------------------------------------------
     results.int.output <- disply_results(x = results.int, org = org, int = T)
     results.int <- annotate_results(results.int, org = org)
+    if(sc){
     cells_pui <- as.data.frame(results.int@ppui.cells)
     cells_pui$cell <- gsub(pattern = "_proximal_PUI", replacement = "",
                            x = rownames(cells_pui))
@@ -741,6 +743,7 @@ if (int) {
     colnames(cells_pui) <- c("Sample", "Cell_BC", "Mean_intronic_PUI")
     write.table(x = cells_pui, file = "./outs/Intronic.Mean.Cell.IPUI.txt",
                 quote = F, sep = "\t", col.names = T, row.names = F)
+    }
     write.table(x = results.int.output, file = "./outs/Intronic.APA.events.txt", 
                 quote = F, sep = "\t", col.names = T, row.names = F)
     write.table(x = results.int@metadata, file = "./outs/Intronic.peaks.txt",
