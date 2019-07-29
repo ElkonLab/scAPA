@@ -234,6 +234,7 @@ setMethod("calc_cpm",
           function(x){
             .x <- data.matrix(x@clus.counts[,-1])
             CPMmat <- calc_cpm(x = .x)
+            rownames(CPMmat) <- x@clus.counts[,1]
             x@norm$CPM <- CPMmat
             x
           })
