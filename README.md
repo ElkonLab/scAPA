@@ -79,7 +79,7 @@ By default, the script counts reads at a single-cell level. For faster analysis,
 
 ### Estimated Run Time
 
-Running the script on the example files with 30 cores, took approximately 11 hours. Bellow are estimated times (30 cores) for each step of the analysis:
+Running the script on the example files with 30 cores, took approximately 13 hours and 30 minutes. Bellow are estimated times (30 cores) for each step of the analysis:
 
 -   **Step 1a** PCR duplicates removal - approximately 2 hours and 30 minutes.
 
@@ -93,7 +93,7 @@ Running the script on the example files with 30 cores, took approximately 11 hou
 
 -   **Step 4** Statistical analysis - approximately 5 minutes.
 
--   **Step 5** Inferring global trends - approximately 20 minutes.
+-   **Step 5** Inferring global trends - approximately 2 hours and 30 minutes.
 
 Output Files
 ------------
