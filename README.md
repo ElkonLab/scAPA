@@ -67,6 +67,7 @@ The shell script will perform all the following steps:
 ![.](Pic/PiplineDigram.png)
 
 For details regarding the individual steps, see [pipeline.description.pdf.](pipeline.description.pdf)
+We also provide instructions for implementing our pipline manually. For this see [Instructions for manual implementation of our pipeline](Instructions.manual.pipline.md) and package [vignette](scAPA_vignette.md).
 
 Example for usage
 -----------------
