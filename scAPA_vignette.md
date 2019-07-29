@@ -370,7 +370,7 @@ p <- p + ggplot2::coord_cartesian(xlim = c(-3, 4.1))
 print(p)
 ```
 
-![](scAPA_vignette_files/figure-markdown_github/plot%20ppui-1.png) ![](Pic/p.pui.png)
+![](Pic/p.pui.png)
 
 We can plot a tSNE coloring cells according to their mean proximal PUI, as follows:
 
@@ -409,4 +409,4 @@ colnames(tsne)[2:4] <- c("Cell Cluster", "tsne1", "tsne2")
               gridExtra::grid.arrange(g, p, nrow = 1)
 ```
 
-![](scAPA_vignette_files/figure-markdown_github/tsne-1.png) ![](Pic/tsnes.png)
+![](Pic/tsnes.png)
