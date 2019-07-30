@@ -1,7 +1,7 @@
 Instructions for Manual Implementation of Our Pipeline
 ================
 
-This is a file containing instruction for manually implementing the first two steps of our pipeline (see for descriptions of the steps). **Note that scAPA.shell.script.R automatically performs all of the five steps of the pipline**.
+This is a file containing instruction for manually implementing the first two steps of our pipeline (see [pipeline.description.pdf.](pipeline.description.pdf) for descriptions of the steps). **Note that scAPA.shell.script.R automatically performs all of the five steps of the pipline**.
 
 Prerequisites
 -------------
@@ -39,19 +39,19 @@ require(scAPA)
 
 <!-- -->
 
-    sh -c 'for sample in down.sampled.SRR6129050 down.sampled.SRR6129051 ; do FilterBam TAG_RETAIN=UB I=${sample}.bam O=UB.${sample}.bam; done'
+    for sample in down.sampled.SRR6129050 down.sampled.SRR6129051 ; do FilterBam TAG_RETAIN=UB I=${sample}.bam O=UB.${sample}.bam; done
 
 -   UMI tools requires indexed bams:
 
 <!-- -->
 
-    sh -c 'for sample in down.sampled.SRR6129050 down.sampled.SRR6129051 ; do samtools index UB.${sample}.bam; done'
+    for sample in down.sampled.SRR6129050 down.sampled.SRR6129051 ; do samtools index UB.${sample}.bam; done
 
 -   Then UMI tools is ran with “method=unique” so that cellranger corrected molecular barcodes are used:
 
 <!-- -->
 
-    sh -c 'for sample in down.sampled.SRR6129050 down.sampled.SRR6129051 ;do umi_tools dedup -I UB.${sample}.bam -S dedup.${sample}.bam --method=unique --extract-umi-method=tag --umi-tag=UB --cell-tag=CB; done'
+    for sample in down.sampled.SRR6129050 down.sampled.SRR6129051 ;do umi_tools dedup -I UB.${sample}.bam -S dedup.${sample}.bam --method=unique --extract-umi-method=tag --umi-tag=UB --cell-tag=CB; done
 
 #### b. Peak detection
 
@@ -59,7 +59,7 @@ require(scAPA)
 
 <!-- -->
 
-    makeTagDirectory Tagdirectory dedup.down.sampled.SRR6129050.bamdedup.down.sampled.SRR6129051.bam
+    makeTagDirectory Tagdirectory dedup.down.sampled.SRR6129050.bam dedup.down.sampled.SRR6129051.bam
 
 -   Homer findPeaks is used to identify peaks. By default, findPeaks adjusts reads to the center of their fragment. To avoid this, fragLength is set to the average read length. To find peaks of variable width, Homer is set to find peaks of width 50nt and a minimum distance of 1 nt between peaks.
 
@@ -70,50 +70,50 @@ require(scAPA)
 -   The function merge\_peaks from scAPA package uses bedtools to merge peaks less than 100 nt apart:
 
 ``` r
-merge_peaks(bedtools.path = bedtools.path, peaks.file = "Peakfile", path = "./")
+scAPA::merge_peaks(bedtools.path = bedtools.path, peaks.file = "Peakfile", path = "./")
 ```
 
 bedtools.path is the path to bedtools
 
--   scAPA function intersect\_peaks uses bedtools to intersect peaks file with a 3' UTR bed file to create a bed file of the 3’ UTR peaks. The peaks are annotated according to their 3’ UTR and their position within it.
+-   scAPA function intersect\_peaks uses bedtools to intersect Peakfile with a 3' UTR bed file to create a bed file of the 3’ UTR peaks. The peaks are annotated according to their 3’ UTR and their position within it.
 
 ``` r
-peaks.bed <- intersect_peaks(org = "Mm", bed.name = "./merge.peakfile.bed",
-                             path = "", bedtools.path = bedtools.path, 
-                             introns = F)
-write.bed(.x = peaks.bed, f = "./peaks.bed")
+peaks.bed <- scAPA::intersect_peaks(org = "Mm", 
+                                    bed.name = "./merge.peakfile.bed",
+                                    path = "", bedtools.path = bedtools.path, 
+                                    introns = F)
+scAPA::write.bed(.x = peaks.bed, f = "./peaks.bed")
 ```
 
 #### c. Separating Peaks with bimodal UMI counts distribution
 
-Adjacent pA sites may result in a single peak. To detect and separate such peaks the R package mclust is used to fit a Gaussian finite mixture model with two components to the UMI counts distribution in the interval of each peak. The input to mclust, the UMI counts distribution, is prepared as follows: \* To detect reads from the union of all reads from all samples, the duplicate-removed BAM files are merged.
+Adjacent pA sites may result in a single peak. To detect and separate such peaks the R package mclust is used to fit a Gaussian finite mixture model with two components to the UMI counts distribution in the interval of each peak. The input to mclust, the UMI counts distribution, is prepared as follows:
+
+-   To detect reads from the union of all reads from all samples, the duplicate-removed BAM files are merged.
+
+<!-- -->
 
     samtools merge merged.bam dedup.down.sampled.SRR6129050.bam dedup.down.sampled.SRR6129051.bam
 
--   Two BEDGRAPHS files are produced from this BAM, one for the plus strand and one for the minus strand, using bedtools genomcove
+-   A BEDGRAPHS files are produced from this BAM, one for the plus strand and one for the minus strand, using bedtools genomcove. The following two commands produce one BEDGRAPHS containg both strands and convertes it into a BED format:
 
 <!-- -->
 
     bedtools genomecov -ibam merged.bam -bg -strand + | awk 'BEGIN {OFS = " "}{print $1, $2, $3, $4, ".", "+"}' > merged.wig
 
-    bedtools genomecov -ibam merged.bam -bg -strand - | awk 'BEGIN {OFS = " "}{print $1, $2, $3, $4, ".", "-"}' > merged.wig
+    bedtools genomecov -ibam merged.bam -bg -strand - | awk 'BEGIN {OFS = " "}{print $1, $2, $3, $4, ".", "-"}' >> merged.wig
 
--   The BEDGRAPHS files are converted into a BED format and bedtools intersect is used to intersect them with the peaks' BED file.
+-   Bedtools intersect is used to intersect them with the peaks' BED file.
 
 <!-- -->
 
     bedtools intersect -s -wb -b peaks.bed -a merged.wig > intersected.wig
 
--   The intersected file is read in R and converted to a list such that each element of the list, corresponding to a specific peak, is a numeric vector whose values represent read coverage observed across the peak.
+-   The intersected file is read in R and converted to a list such that each element of the list, corresponding to a specific peak, is a numeric vector whose values represent read coverage observed across the peak. Mclust is used to fit an equal variance Gaussian finite mixture model with two components to (G=2, modelNames="E") to each list element. If the predicted means of the two fitted Gaussian components are separated by more than three standard deviations and at least 75 nt, the peak is split into two, according to mclust classification. The peak's bed is edited accordingly (Correct peak index). All this is done using the function creat\_mclus, from scAPA package.
 
 ``` r
 peaks.wig <- read.delim(file = "intersected.wig", header = F)
 peaks.wig <- split(x = peaks.wig, f = peaks.wig$V10, drop = T)
-```
-
--   mclust is used to fit an equal variance Gaussian finite mixture model with two components to (G=2, modelNames="E") to each list element. If the predicted means of the two fitted Gaussian components are separated by more than three standard deviations and at least 75 nt, the peak is split into two, according to mclust classification. The peak's bed is edited accordingly (Correct peak index). All this is done using the function creat\_mclus, from scAPA package.
-
-``` r
 bed <- plyr::rbind.fill(lapply(1:length(peaks.wig),
                                            FUN = scAPA::creat_mclus))
 ```
@@ -146,32 +146,15 @@ The object annotation.files contains the paths to the cell cluster annotation fi
 
 <!-- -->
 
-
-    FilterBamByTag TAG=CB I=dedup.down.sampled.SRR6129050.bam O=down.sampled.SRR6129050_ES.bam TAG_VALUES_FILE=tag_value_file.down.sampled.SRR6129050_ES.txt
-     
-    FilterBamByTag TAG=CB I=dedup.down.sampled.SRR6129050.bam O=down.sampled.SRR6129050_RS.bam TAG_VALUES_FILE=tag_value_file.down.sampled.SRR6129050_RS.txt
-     
-    FilterBamByTag TAG=CB I=dedup.down.sampled.SRR6129050.bam O=down.sampled.SRR6129050_SC.bam TAG_VALUES_FILE=tag_value_file.down.sampled.SRR6129050_SC.txt
-     
-    FilterBamByTag TAG=CB I=dedup.down.sampled.SRR6129051.bam O=down.sampled.SRR6129051_ES.bam TAG_VALUES_FILE=tag_value_file.down.sampled.SRR6129051_ES.txt
-     
-    FilterBamByTag TAG=CB I=dedup.down.sampled.SRR6129051.bam O=down.sampled.SRR6129051_RS.bam TAG_VALUES_FILE=tag_value_file.down.sampled.SRR6129051_RS.txt
-     
-    FilterBamByTag TAG=CB I=dedup.down.sampled.SRR6129051.bam O=down.sampled.SRR6129051_SC.bam TAG_VALUES_FILE=tag_value_file.down.sampled.SRR6129051_SC.txt
+    for sample in SRR6129050 SRR6129051; do for cluster in ES RS SC; do FilterBamByTag TAG=CB I=dedup.${sample}.bam tagValuefile=tag_value_file.down.sampled.${sample}_${cluster}.txt O=down.sampled.${sample}_${cluster}.bam; done; done
 
 -   Next, bams of the same cluster are merged:
 
 <!-- -->
 
+    for cluster in ES RS SC; do samtools merge ${cluster}.bam down.sampled.SRR6129050_${cluster}.bam down.sampled.SRR6129051_${cluster}.bam; done
 
-
-    samtools merge ES.bam down.sampled.SRR6129050_ES.bam down.sampled.SRR6129051_ES.bam
-
-    samtools merge RS.bam down.sampled.SRR6129050_RS.bam down.sampled.SRR6129051_RS.bam
-
-    samtools merge SC.bam down.sampled.SRR6129050_SC.bam down.sampled.SRR6129051_SC.bam
-
-We end up with 3 BAMS: ES.bam, RS.bam, and SC.bam.
+We end up with 3 BAM files: ES.bam, RS.bam, and SC.bam.
 
 Rsubread package featureCounts function is used.
 
@@ -200,7 +183,7 @@ largestOverlap = True is specified so that reads spanning two peaks are counted 
 -   We also produce an object storing the 200 nt downstream sequences for each peak, using scAPA function read\_down.seq.
 
 ``` r
-  aseq <- read_down.seq(saf = utr.saf, 
+  aseq <- scAPA::read_down.seq(saf = utr.saf, 
                             char.length.path = char.length.path,
                             fasta.path = fasta.path, chr.modify = T)
   aseq <- aseq[,c(4, 6)]
@@ -212,11 +195,11 @@ Here char.length.path is the path to the chromosomes length file, and fasta.path
 row.Data <- counts$annotation[,c(2,3,4,1,6,5)]
 ```
 
--   Finnaly, we use set\_scAPAList from scAPA to creat a scAPAList object for downstream analysis:
+-   Finnaly, we use set\_scAPAList from scAPA package to creat a scAPAList object for downstream analysis:
 
 ``` r
-a <- set_scAPAList(.clus.counts = co, .row.Data = row.Data, 
+a <- scAPA::set_scAPAList(.clus.counts = co, .row.Data = row.Data, 
                      .down.seq = aseq)
 ```
 
-There is no need to match the order of the peaks in the three object as the function set\_scAPAList does so automatically. For the next steps of the analysis, see scAPA package [vignette](scAPA_vignette.md).
+There is no need to match the order of the peaks in the three object as set\_scAPAList does so automatically. For the next steps of the analysis, see scAPA package [vignette](scAPA_vignette.md).
