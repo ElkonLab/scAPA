@@ -417,37 +417,6 @@ ES.RS.lengthening
 
     ## [1] 116
 
-To plot a pei chart:
-
-``` r
-require(ggplot2)
-df = data.frame(Event = c("3'UTR shortening", "3'UTR lengthening"), 
-                value = c(ES.RS.shortening, ES.RS.lengthening))
-
-df$frac <- df$value/sum(df$value)
-blank_theme <- theme_minimal()+theme(axis.title.x = element_blank(), 
-                                     axis.title.y = element_blank(),
-                                     panel.border = element_blank(), 
-                                     panel.grid=element_blank(),
-                                     axis.ticks = element_blank(),
-                                     plot.title=element_text(size=14,
-                                                             face="bold"))
-
-library(scales)
-g <- ggplot(df, aes(x="", y=value, fill=Event)) + 
-  geom_bar(width = 1, stat = "identity") + ggplot2::coord_polar("y", start=0) + 
-  scale_fill_brewer(palette = "Pastel1") + 
-  blank_theme + 
-  theme(axis.text.x=element_blank()) + 
-  geom_text(aes(y = value/2 + c(0, cumsum(value)[-length(value)]),
-                label = paste(percent(frac),paste0("(", value, ")"),
-                              sep = " ")), size=5) +
-  ggtitle("ES vs RS")
-print(g)
-```
-
-![](Pic/Pie.png)
-
 -   We can plot a tSNE coloring cells according to their mean proximal PUI, as follows:
 
 ``` r
