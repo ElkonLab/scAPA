@@ -85,21 +85,21 @@ By default, the script counts reads at a single-cell level. For faster analysis,
 
 ### Estimated Run Time
 
-Running the script on the example files with 30 cores, took approximately 11 hours. Bellow are estimated times (30 cores) for each step of the analysis:
+Running the script on the example files with 30 cores, took approximately 14 hours. Bellow are estimated times (30 cores) for each step of the analysis:
 
--   **Step 1a** PCR duplicates removal - ~2 hours and 30 minutes.
+-   **Step 1a** PCR duplicates removal: ~2 hours and 30 minutes.
 
--   **Step 1b** Peak detection - ~45 minetes
+-   **Step 1b** Peak detection: ~45 minetes
 
--   **Step 1c** Separating Peaks - ~3 hours.
+-   **Step 1c** Separating Peaks: ~3 hours.
 
--   **Step 2** Quantifying the usage of each peak - ~4 hours.
+-   **Step 2** Quantifying the usage of each peak: ~4 hours.
 
--   **Stage 3** Peak filtering - ~20 minutes.
+-   **Stage 3** Peak filtering: ~20 minutes.
 
--   **Step 4** Statistical analysis - ~5 minutes.
+-   **Step 4** Statistical analysis: ~5 minutes.
 
--   **Step 5** Inferring global trends - ~20 minutes.
+-   **Step 5** Inferring global trends: ~3 hours.
 
 Output Files
 ------------
