@@ -772,9 +772,9 @@ if (int) {
 }
 # End of script -----------------------------------------------------------
 # Removing remining temporary files
-system(command = "rm -r temp", wait = T)
+system(command = "rm temp/*", wait = T)
 write(x = cat(Sys.time(), "\tscAPA.script.R Finished.\nOutputs are in the ",
               "directory:\n", path.to.files, "/scAPA/outs"),
-      file = "./scAPA.script.log")
+      file = "./scAPA.script.log", append = T)
 cat("scAPA.script.R Finished.\nOutputs are in the directory:\n",
     path.to.files, "./scAPA/outs")
