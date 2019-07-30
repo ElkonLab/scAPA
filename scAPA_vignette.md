@@ -29,6 +29,9 @@ This **is not** a downsampled version, but an analysis of the full bams. Downloa
 ``` r
 peaks.url <- "https://github.com/ElkonLab/scAPA/blob/master/Rfiles/Peaks.RDS"
 download.file(url = peaks.url, destfile = "Peaks.RDS")
+```
+
+``` r
 a <- readRDS("Peaks.RDS")
 a
 ```
@@ -64,7 +67,7 @@ head(a@cells.counts[,1:3])
     ## 5                             0
     ## 6                             0
 
-Rows are peaks, and columns are cells. The cells name is composed of its sample and barcodes (the sample is added to cope with cells barcodes that are duplicated between samples). 
+Rows are peaks, and columns are cells. The cells name is composed of its sample and barcodes (the sample is added to cope with cells barcodes that are duplicated between samples).
 
 -   Cell-cluster annotions:
 
@@ -80,7 +83,7 @@ head(a@cluster.anot)
     ## 5 SRR6129050_AAACGGGTCATTTGGG-1           ES -40.309965  -8.694377
     ## 6 SRR6129050_AAACGGGTCCTCATTA-1           ES -41.710761  -4.112366
 
-The first column is the cell barcodes (and sample) as it appears in the peak count matrix. The second is their assigned cell clusters. Other columns, such as the tsne coordinates, are optional.
+The first column is the cell barcodes as it appears in the peak count matrix. The second is their assigned cell clusters. Other columns, such as the tsne coordinates, are optional.
 
 -   A data.frame with the sequence downstream the 3' edge of each peak:
 
@@ -97,7 +100,7 @@ head(a@down.seq,2)
 
 This is required for filtering peaks that may result from internal priming.
 
--   Information regarding the peaks genomic location (optional):
+-   Information regarding the peaks genomic location (optional slot):
 
 ``` r
 head(a@row.Data)
@@ -132,7 +135,7 @@ a
     ## 5 ENSMUSG00000000037.16_2_2   1    7   5
     ## 6 ENSMUSG00000000049.11_1_1 208 1017  51
 
-This step is required if the option sc was specified in scAPA.shell.scipt.R. If sc = false, clusters' counts have already been calculated.
+This step is required if the option sc was specified in scAPA.shell.scipt.R If sc = false, clusters' counts have already been calculated.
 
 Peak filtering
 --------------
@@ -152,7 +155,7 @@ head(a@norm$CPM)
     ## ENSMUSG00000000037.16_2_2  0.1819897  0.2618377  0.2213172
     ## ENSMUSG00000000049.11_1_1 37.8538539 38.0412703  2.2574358
 
-Then, only peaks whose total sum over all cell clusters is above a certion CPMs threshold are considered. Here we choose 10 as the threshhold:
+Then, only peaks whose total sum over all cell clusters is above a certion CPMs threshold are considered. Here we choose 10 as the threshold:
 
 ``` r
 keep.cpm <- rowSums(a@norm$CPM) > 10
@@ -174,7 +177,7 @@ a
     ## 11 ENSMUSG00000000085.16_1_1   22   388   732
     ## 12  ENSMUSG00000000088.7_1_1 1711 15203 14005
 
-To exclude internal priming suspected peaks, peaks having a stretch of at least 8 consecutive As in the region between 10 nt to 140 nt. to the peak's end are filtered.
+To exclude internal priming suspected peaks, peaks having a stretch of at least 8 consecutive As in the region between 10 nt to 140 nt. to the peak's end are filtered:
 
 ``` r
 a <- filter_IP(x = a, int.priming.seq = "AAAAAAAA",
@@ -216,7 +219,7 @@ results
     ##  clusters:  ES RS SC 
     ##  metadata:  Chr Start End GeneID Length Strand
 
--   The slot clus.counts is a list such that each 3’UTR with more than one peak is represented by a table where rows are its associated peaks and columns cell clusters.
+-   The slot clus.counts is a list such that each 3’UTR with more than one peak is represented by a table where rows are its associated peaks and columns are cell clusters.
 
 ``` r
 results@clus.counts[1:2]
@@ -232,7 +235,7 @@ results@clus.counts[1:2]
     ## ENSMUSG00000000127.14_1_1          1 49 883 970
     ## ENSMUSG00000000127.14_1_2          2  3 129 124
 
-An analogous list is calculated for the 'cells.counts' slot:
+An analogous list is produced for the 'cells.counts' slot:
 
 ``` r
 results@cells.counts[[1]][,1:3]
@@ -264,13 +267,13 @@ head(results@pvalues$all)
 
 The clus argument specifies the clusters to be tested. Default is "all" for all cluster. specify, for example, clus = c("ES", "RS") to test ES vs RS.
 
--   For 3' UTR with more than two peaks that show significant usage change, for each peak i, chi-square test for goodness of fit is performed. The threshold for significant change is set by the argument sig.level (FDR value).
+-   For 3' UTR with more than two peaks that show significant usage change, for each peak, chi-square test for goodness of fit is performed. The threshold for significant change is set by the argument sig.level (FDR value)
 
 ``` r
 results <- test_peaks(results, clus = "all", sig.level = 0.05)
 ```
 
-We get a slot 'peak.pvaues' with such peaks (p-values, q-values and peak PUI for each cluster).
+We get a slot 'peak.pvaues' with such peaks (p-values, q-values, and peak PUI for each cluster).
 
 ``` r
 head(results@peak.pvaues$Peaks_all)
@@ -309,7 +312,7 @@ head(results@ppui.clus)
     ## ENSMUSG00000000282.12_1       0.4717082      -0.9529690      -2.1937010
     ## ENSMUSG00000000346.9_1        1.5849625      -0.3130641      -0.6727026
 
-This function also creates a slot 'pui.cells' with the mean PUI index is calculated.
+This function also calculates the mean PUI index for each cell and assin it to the slot 'ppui.cells'.
 
 ``` r
 head(results@ppui.cells)
@@ -347,36 +350,108 @@ results
     ##  Max.   : 5.22199   Max.   : 4.3779   Max.   : 3.7851  
     ##  NA's   :1
 
--   We can creat a scAPAresults object called sig containing only 3'UTR with significant APA events.
+-   We creat a scAPAresults object containing only 3'UTR with significant APA events.
 
 ``` r
 sig.utrs <- as.vector(results@pvalues$all[,2] < 0.05)
 sig <- results[which(sig.utrs),]
 ```
 
-Plot the cumulative distribution function of the proximal PUI of the significant 3'UTRs:
+-   Plot the cumulative distribution function of the proximal PUI of the significant 3'UTRs:
 
 ``` r
+require(ggplot2)
 tidy.ppui <- as.data.frame(sig@ppui.clus)
 colnames(tidy.ppui) <- gsub(x = colnames(tidy.ppui), 
                             pattern = "_proximal_PUI", replacement = "")
 tidy.ppui <- tidyr::gather(data = tidy.ppui)
 colnames(tidy.ppui) <- c("Cluster", "value")
-p <- ggplot2::ggplot(data = tidy.ppui, 
-                     ggplot2::aes(x = value, color = Cluster))
-p <- p + ggplot2::stat_ecdf(size = 1)
-p <- p + ggplot2::theme_bw()
-p <- p + ggplot2::xlab("Proximal peak usage index")
-p <- p + ggplot2::ylab("Cumulative fraction")
-p <- p + ggplot2::coord_cartesian(xlim = c(-3, 4.1))
+p <- ggplot(data = tidy.ppui, aes(x = value, color = Cluster)) + 
+  stat_ecdf(size = 1) + theme_bw() + xlab("Proximal peak usage index") +
+  ylab("Cumulative fraction") + ggplot2::coord_cartesian(xlim = c(-3, 4.1))
 print(p)
 ```
 
 ![](Pic/p.pui.png)
 
-We can plot a tSNE coloring cells according to their mean proximal PUI, as follows:
+-   Consider 3' UTRs with exactly two peaks to identify events of 3'UTR shortening (or lengthening).
 
 ``` r
+two.peaks <- sapply(sig@clus.counts, function(x){nrow(x) == 2})
+sig.two <- sig[which(two.peaks),]
+sig.two
+```
+
+    ## an scAPA results object
+    ## 
+    ## # 3' UTR with APA:  1017 
+    ## # cells:  2043 
+    ##  clusters:  ES RS SC 
+    ##  metadata:  Chr Start End GeneID Length Strand 
+    ## # significant (FDR < 5%) APA events:  1017 
+    ## 
+    ## proximal peak usage index summary:
+    ##  ES_proximal_PUI  RS_proximal_PUI   SC_proximal_PUI  
+    ##  Min.   :-2.850   Min.   :-2.4174   Min.   :-4.6368  
+    ##  1st Qu.: 0.500   1st Qu.:-0.4286   1st Qu.:-1.1135  
+    ##  Median : 1.255   Median : 0.3604   Median :-0.4183  
+    ##  Mean   : 1.323   Mean   : 0.3625   Mean   :-0.4176  
+    ##  3rd Qu.: 2.183   3rd Qu.: 1.1436   3rd Qu.: 0.2899  
+    ##  Max.   : 5.222   Max.   : 3.8145   Max.   : 2.7578
+
+For such 3' UTRs, an increase in the value of the proximal PUI in cell type 1 relative to cell type 2 indicates 3' UTR shortening in cell type 1. For example, comparing ES to RS:
+
+``` r
+ES.RS.shortening = sum(sig.two@ppui.clus[,2] > sig.two@ppui.clus[,3], 
+                       na.rm = T)
+ES.RS.lengthening = sum(sig.two@ppui.clus[,2] < sig.two@ppui.clus[,3],
+                        na.rm = T)
+ES.RS.shortening 
+```
+
+    ## [1] 901
+
+``` r
+ES.RS.lengthening
+```
+
+    ## [1] 116
+
+To plot a pei chart:
+
+``` r
+require(ggplot2)
+df = data.frame(Event = c("3'UTR shortening", "3'UTR lengthening"), 
+                value = c(ES.RS.shortening, ES.RS.lengthening))
+
+df$frac <- df$value/sum(df$value)
+blank_theme <- theme_minimal()+theme(axis.title.x = element_blank(), 
+                                     axis.title.y = element_blank(),
+                                     panel.border = element_blank(), 
+                                     panel.grid=element_blank(),
+                                     axis.ticks = element_blank(),
+                                     plot.title=element_text(size=14,
+                                                             face="bold"))
+
+library(scales)
+g <- ggplot(df, aes(x="", y=value, fill=Event)) + 
+  geom_bar(width = 1, stat = "identity") + ggplot2::coord_polar("y", start=0) + 
+  scale_fill_brewer(palette = "Pastel1") + 
+  blank_theme + 
+  theme(axis.text.x=element_blank()) + 
+  geom_text(aes(y = value/2 + c(0, cumsum(value)[-length(value)]),
+                label = paste(percent(frac),paste0("(", value, ")"),
+                              sep = " ")), size=5) +
+  ggtitle("ES vs RS")
+print(g)
+```
+
+![](Pic/Pie.png)
+
+-   We can plot a tSNE coloring cells according to their mean proximal PUI, as follows:
+
+``` r
+require(ggplot2)
 mean_pui <- as.data.frame(results@ppui.cells)
 
 mean_pui$Cell_BC <- gsub(pattern = "_proximal_PUI", replacement = "", 
@@ -384,30 +459,19 @@ mean_pui$Cell_BC <- gsub(pattern = "_proximal_PUI", replacement = "",
 colnames(mean_pui)[1] <- "Mean Proximal PUI"
 tsne <- merge(a@cluster.anot, mean_pui, by.x = "Cell_BC")
 require(gridExtra)
-```
-
-    ## Loading required package: gridExtra
-
-``` r
 colnames(tsne)[2:4] <- c("Cell Cluster", "tsne1", "tsne2")
-              p <- ggplot2::ggplot(tsne, 
-                                   ggplot2::aes(x = tsne1 , 
-                                                y = tsne2, 
-                                                color = `Mean Proximal PUI`))
-              p <- p + ggplot2::geom_point(size=0.8)  
-              p <- p + ggplot2::xlab("tSNE1") + ggplot2::ylab("tSNE2") 
-              p <- p +  ggplot2::theme_bw()
-              p <- p+ ggplot2::scale_color_gradient(low = "blue",high = "red")
-              p <- p + ggplot2::ggtitle("tSNE mean proximal PUI")
-              p <- p + ggplot2::theme(legend.position="top")
-              g <- ggplot2::ggplot(tsne,  ggplot2::aes(x = tsne1, 
-                                                       y = tsne2, 
-                                                       color = `Cell Cluster`))
-              g <- g + ggplot2::geom_point(size=0.8) 
-              g <- g+ ggplot2::xlab("tSNE1") + ggplot2::ylab("tSNE2") 
-              g <- g +  ggplot2::theme_bw()
-              g <- g + ggplot2::ggtitle("tSNE cell clusters")
-              g <- g + ggplot2::theme(legend.position="top")
+              p <-ggplot(tsne, ggplot2::aes(x = tsne1 , 
+                                            y = tsne2, 
+                                            color = `Mean Proximal PUI`)) +
+                geom_point(size=0.8) + xlab("tSNE1") + ylab("tSNE2") + 
+                theme_bw() +scale_color_gradient(low = "blue", high = "red") +
+                ggtitle("tSNE mean proximal PUI") + 
+                theme(legend.position="top")
+              g <- ggplot(tsne, ggplot2::aes(x = tsne1, y = tsne2,
+                                             color = `Cell Cluster`)) +
+                ggplot2::geom_point(size=0.8) + xlab("tSNE1") + 
+                ylab("tSNE2") + theme_bw() + ggtitle("tSNE cell clusters") + 
+                theme(legend.position="top")
               gridExtra::grid.arrange(g, p, nrow = 1)
 ```
 
