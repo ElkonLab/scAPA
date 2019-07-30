@@ -23,15 +23,24 @@ Installing
 -   Install all the above.
 -   Install the R package devtools. In R:
 
-<!-- -->
-
-    install.packages("devtools")
+``` r
+install.packages("devtools")
+```
 
 -   Install scAPA package. In R:
 
-<!-- -->
+``` r
+devtools::install_github("ElkonLab/scAPA/scAPA")
+```
 
-    devtools::install_github("ElkonLab/scAPA/scAPA")
+-   Install the package Rsubread:
+
+``` r
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+    install.packages("BiocManager")
+}
+if (!require("Rsubread", quietly = T)) BiocManager::install("Rsubread")
+```
 
 -   Download scAPA.shell.script folder. Or use:
 
@@ -39,7 +48,7 @@ Installing
 
     git clone https://github.com/ElkonLab/scAPA.git
 
--   Open configfile.txt. Fill in the paths to the fasta files, chromosome length files, and all the tools as instructed in the file. Leave "PATH" if the tool is in your PATH environment variable. Save your changes.
+-   Open configfile.txt in scAPA.shell.script folder. Fill in the paths to the fasta files, chromosome length files, and all the tools as instructed in the file. Leave "PATH" if the tool is in your PATH environment variable. Save your changes.
 
 Using scAPA shell script
 ========================

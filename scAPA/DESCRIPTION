@@ -21,6 +21,4 @@ Imports:
     EnvStats,
     mclust,
     pbapply,
-    parallel,
-    BiocManager,
-    Rsubread
+    parallel
