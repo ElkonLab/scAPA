@@ -55,7 +55,8 @@ read_args <- function(arg = script.args, arg.string, defult = NULL) {
     if (pos > 0) {
         pos <- pos + nchr.arg + 1
         out <- substring(arg, first = pos)
-        out <- substring(out, first = 1, last = (regexpr(pattern = " ", text = out) - 1))
+        out <- substring(out, first = 1, last = (regexpr(pattern = " ", 
+                                                         text = out) - 1))
     } else {
         out <- defult
     }

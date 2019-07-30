@@ -25,13 +25,19 @@ Installing
 
 <!-- -->
 
-    ## install.packages("devtools")
+    install.packages("devtools")
+
+-   Install scAPA package. In R:
+
+<!-- -->
+
+    devtools::install_github("ElkonLab/scAPA/scAPA")
 
 -   Download scAPA.shell.script folder. Or use:
 
 <!-- -->
 
-    ## git clone https://github.com/ElkonLab/scAPA.git
+    git clone https://github.com/ElkonLab/scAPA.git
 
 -   Open configfile.txt. Fill in the paths to the fasta files, chromosome length files, and all the tools as instructed in the file. Leave "PATH" if the tool is in your PATH environment variable. Save your changes.
 

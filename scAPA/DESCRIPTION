@@ -18,4 +18,9 @@ Imports:
     dplyr,
     ggplot2,
     purrr,
-    EnvStats
+    EnvStats,
+    mclust,
+    pbapply,
+    parallel,
+    BiocManager,
+    Rsubread
