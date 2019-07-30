@@ -703,7 +703,7 @@ dev.off()
 # Introns ----------------------------------------------------------------- 
 # Peak filtering ----------------------------------------------------------
 write_log_start("Stage 3: Peak filtering (introns)\n\n",
-                command = NA, f = "/scAPA.script.log")
+                command = NA, f = "./scAPA.script.log")
 if (int) {
     if (sc) a.int <- calc_clusters_counts(a.int)
     results.int <- set_scAPAresults(x = a.int, int = T, cpm = ICPM.cuttoff,
@@ -717,12 +717,12 @@ if (int) {
     
     # Statistical analysis ----------------------------------------------------
     write_log_start("Stage 4: Statistical analysis (introns)\n\n", 
-                    command = NA, f = "/scAPA.script.log")
+                    command = NA, f = "./scAPA.script.log")
     # Chi-squre test for APA
     results.int <- test_APA(results.int, clus = "all")
     # Inferring global trends -------------------------------------------------
     write_log_start("Stage 5: Inferring global trends (introns)\n\n", 
-                    command = NA, f = "/scAPA.script.log")
+                    command = NA, f = "./scAPA.script.log")
     results.int <- calc_p_pui_mat(results.int)
     saveRDS(object = results.int, file = "./outs/results_introns.RDS")
     
@@ -777,4 +777,4 @@ write(x = cat(Sys.time(), "\tscAPA.script.R Finished.\nOutputs are in the ",
               "directory:\n", path.to.files, "/scAPA/outs"), 
       file = "./scAPA.script.log")
 cat("scAPA.script.R Finished.\nOutputs are in the directory:\n", 
-    path.to.files, "/scAPA/outs")
+    path.to.files, "./scAPA/outs")

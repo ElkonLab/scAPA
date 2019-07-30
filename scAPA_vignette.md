@@ -22,11 +22,13 @@ if(!require(scAPA)) devtools::install_github("ElkonLab/scAPA/scAPA")
 require(scAPA)
 ```
 
-The files used for this example are the results of scAPA analysis of data from [Lukassen et al](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6132189/).
+The file Peaks.RDS used for this example is the result of running scAPA.shell.script.R on data from [Lukassen et al](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6132189/).
 
-This **is not** a downsampled version, but an analysis of the full bams. Load scAPAList object.
+This **is not** a downsampled version, but an analysis of the full bams. Download and load the scAPAList object Peaks.RDS.
 
 ``` r
+peaks.url <- "https://github.com/ElkonLab/scAPA/blob/master/Rfiles/Peaks.RDS"
+download.file(url = peaks.url, destfile = "Peaks.RDS")
 a <- readRDS("Peaks.RDS")
 a
 ```
@@ -62,9 +64,9 @@ head(a@cells.counts[,1:3])
     ## 5                             0
     ## 6                             0
 
-rows are peaks, and columns are cell clusters.
+Rows are peaks, and columns are cells. The cells name is composed of its sample and barcodes (the sample is added to cope with cells barcodes that are duplicated between samples). 
 
--   Cell-cluster annotions.
+-   Cell-cluster annotions:
 
 ``` r
 head(a@cluster.anot)
@@ -78,7 +80,7 @@ head(a@cluster.anot)
     ## 5 SRR6129050_AAACGGGTCATTTGGG-1           ES -40.309965  -8.694377
     ## 6 SRR6129050_AAACGGGTCCTCATTA-1           ES -41.710761  -4.112366
 
-The first column is the cell barcodes as it appears in the peak count matrix. The second is their assigned cell clusters. Other columns, such as the tsne coordinates, are optional.
+The first column is the cell barcodes (and sample) as it appears in the peak count matrix. The second is their assigned cell clusters. Other columns, such as the tsne coordinates, are optional.
 
 -   A data.frame with the sequence downstream the 3' edge of each peak:
 
@@ -95,7 +97,7 @@ head(a@down.seq,2)
 
 This is required for filtering peaks that may result from internal priming.
 
--   Information regarding the peaks genomic location (this is optional):
+-   Information regarding the peaks genomic location (optional):
 
 ``` r
 head(a@row.Data)
@@ -130,7 +132,7 @@ a
     ## 5 ENSMUSG00000000037.16_2_2   1    7   5
     ## 6 ENSMUSG00000000049.11_1_1 208 1017  51
 
-This steop is required if the option sc was specified in scAPA.shell.scipt. If sc = false, clusters' counts have already been calculated.
+This step is required if the option sc was specified in scAPA.shell.scipt.R. If sc = false, clusters' counts have already been calculated.
 
 Peak filtering
 --------------
@@ -214,7 +216,7 @@ results
     ##  clusters:  ES RS SC 
     ##  metadata:  Chr Start End GeneID Length Strand
 
--   The slot clus.counts is a list such that each 3’UTR with more than one peak is represented by a table where rows are peak indices and columns cell clusters.
+-   The slot clus.counts is a list such that each 3’UTR with more than one peak is represented by a table where rows are its associated peaks and columns cell clusters.
 
 ``` r
 results@clus.counts[1:2]
@@ -262,7 +264,7 @@ head(results@pvalues$all)
 
 The clus argument specifies the clusters to be tested. Default is "all" for all cluster. specify, for example, clus = c("ES", "RS") to test ES vs RS.
 
--   For 3' UTR with more than two peaks that show significant usage change, for each peak i, chi-square test for goodness of fit is performed. The threshold for significant change is set by the argument sig.level (FDR value)
+-   For 3' UTR with more than two peaks that show significant usage change, for each peak i, chi-square test for goodness of fit is performed. The threshold for significant change is set by the argument sig.level (FDR value).
 
 ``` r
 results <- test_peaks(results, clus = "all", sig.level = 0.05)
