@@ -140,37 +140,15 @@ path.to.chang.point <- configfile[20]
 # Load R packeges and function scripts------------------------------------------
 # This function load packeges and install them in case they are not installed
 if(!is.null(loc)) .libPaths(loc)
-if (!require(package = "dplyr", quietly = T)) {
-  install.packages(pkgs = "dplyr")}
 require(package = "dplyr", warn.conflicts = F)
-if (!require(package = "tidyr", quietly = T)) {
-  install.packages(pkgs = "tidyr")}
 require(package = "tidyr", warn.conflicts = F)
-if (!require(package = "ggplot2", quietly = T)) {
-  install.packages(pkgs = "ggplot2")}
 require(package = "ggplot2", warn.conflicts = F)
-if (!require(package = "EnvStats", quietly = T)) {
-  install.packages(pkgs = "EnvStats")}
 require(package = "EnvStats", warn.conflicts = F)
-if (!require(package = "parallel", quietly = T)) {
-  install.packages(pkgs = "parallel")}
+if(c > 1){
 require(package = "parallel", warn.conflicts = F)
-if (!require(package = "pbapply", quietly = T)) {
-  install.packages(pkgs = "pbapply")}
-require(package = "pbapply", warn.conflicts = F)
-if (!require(package = "mclust", quietly = T)) {
-  install.packages(pkgs = "mclust")}
+}
 require(package = "mclust", warn.conflicts = F)
-if (!require(package = "devtools", quietly = T)) {
-  install.packages(pkgs = "devtools")}
-require(package = "devtools", warn.conflicts = F)
-if (!requireNamespace("BiocManager", quietly = TRUE)) {
-    install.packages("BiocManager")
-}
-if (!require("Rsubread", quietly = T)) BiocManager::install("Rsubread")
-if (!require("scAPA", quietly = T)) {
-    devtools::install_github("ElkonLab/scAPA/scAPA")
-}
+require("Rsubread")
 require("scAPA")
 
 # Input ---------------------------
@@ -362,10 +340,16 @@ system("rm intersected.wig merged.wig", wait = T)
 # mclust
 mclust.command <- paste0("Mclust()")
 write_log_start(f = "../scAPA.script.log", "Mclust,", command = mclust.command)
+if(c > 1){
 bed <- plyr::rbind.fill(parallel::mclapply(1:length(peaks.wig),
                                            FUN = creat_mclus,
                                            mc.cores = c,
                                            mc.preschedule = T))
+}
+if(c == 1){
+bed <- plyr::rbind.fill(lapply(X = 1:length(peaks.wig),
+                                           FUN = creat_mclus))
+}
 if (!exists("bed")) {
     write_log(f = "../scAPA.script.log", stage = "Mclust", success = F)
     stop("Mclust did not end, shell script did NOT end!")
@@ -560,8 +544,13 @@ if (sc) {
                                              "FillterBam_forcells.out")
             system(command = FilterBAMbyTag.command, wait = T)
         }
+        if(c > 1){
         parallel::mclapply(X = list.cells, FUN = split_bams, mc.cores = c,
                            mc.preschedule = T)
+        }
+        if (c ==1){
+        lapply(X = list.cells, FUN = split_bams)
+        }
     }
     write_log(f = "../scAPA.script.log", stage = "Splitting bams")
 

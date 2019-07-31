@@ -19,6 +19,4 @@ Imports:
     ggplot2,
     purrr,
     EnvStats,
-    mclust,
-    pbapply,
-    parallel
+    mclust

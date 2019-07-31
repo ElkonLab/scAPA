@@ -181,14 +181,14 @@ two.peaks <- sapply(sig@clus.counts, function(x){nrow(x) == 2})
 sig.two <- sig[which(two.peaks),]
 sig.two
 ```
-For such 3' UTRs, an increase in the value of the proximal PUI in cell type 1 relative to cell type 2 indicates 3' UTR shortening in cell type 1. For example, comparing ES to RS:
-```{r ES vs RS}
-ES.RS.shortening = sum(sig.two@ppui.clus[,2] > sig.two@ppui.clus[,3], 
+For such 3' UTRs, an increase in the value of the proximal PUI in cell type 1 relative to cell type 2 indicates 3' UTR shortening in cell type 1. For example, comparing RS to SC:
+```{r RS vs SC}
+RS.SC.shortening = sum(sig.two@ppui.clus[,2] > sig.two@ppui.clus[,3], 
                        na.rm = T)
-ES.RS.lengthening = sum(sig.two@ppui.clus[,2] < sig.two@ppui.clus[,3],
+RS.SC.lengthening = sum(sig.two@ppui.clus[,2] < sig.two@ppui.clus[,3],
                         na.rm = T)
-ES.RS.shortening 
-ES.RS.lengthening
+RS.SC.shortening 
+RS.SC.lengthening
 ```
 
 * We can plot a tSNE coloring cells according to their mean proximal PUI, as follows:

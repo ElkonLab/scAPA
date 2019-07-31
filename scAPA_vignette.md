@@ -399,20 +399,20 @@ sig.two
     ##  3rd Qu.: 2.183   3rd Qu.: 1.1436   3rd Qu.: 0.2899  
     ##  Max.   : 5.222   Max.   : 3.8145   Max.   : 2.7578
 
-For such 3' UTRs, an increase in the value of the proximal PUI in cell type 1 relative to cell type 2 indicates 3' UTR shortening in cell type 1. For example, comparing ES to RS:
+For such 3' UTRs, an increase in the value of the proximal PUI in cell type 1 relative to cell type 2 indicates 3' UTR shortening in cell type 1. For example, comparing RS to SC:
 
 ``` r
-ES.RS.shortening = sum(sig.two@ppui.clus[,2] > sig.two@ppui.clus[,3], 
+RS.SC.shortening = sum(sig.two@ppui.clus[,2] > sig.two@ppui.clus[,3], 
                        na.rm = T)
-ES.RS.lengthening = sum(sig.two@ppui.clus[,2] < sig.two@ppui.clus[,3],
+RS.SC.lengthening = sum(sig.two@ppui.clus[,2] < sig.two@ppui.clus[,3],
                         na.rm = T)
-ES.RS.shortening 
+RS.SC.shortening 
 ```
 
     ## [1] 901
 
 ``` r
-ES.RS.lengthening
+RS.SC.lengthening
 ```
 
     ## [1] 116

@@ -6,27 +6,30 @@ This is a package and a shell script for alternative polyadenylation (APA) analy
 Prerequisites
 =============
 
-1.  Fasta and chromosome length files for human (hg19) or (and) mouse (mm10). Can be downloaded from [UCSC website](http://hgdownload.cse.ucsc.edu/goldenPath/mm10/bigZips/)
-2.  [Samtools](http://www.htslib.org/download/) version 0.1.19-96b5f2294a or above.
-3.  [Bedtools](https://bedtools.readthedocs.io/en/latest/content/installation.html) version v2.27.1-17-gf59480f or above.
-4.  [Homer](http://homer.ucsd.edu/homer/introduction/install.html) version v4.8.3 or above. Uses Homer's "MakeTagdirectory" and "findPeaks".
-5.  [UMI\_tools](https://github.com/CGATOxford/UMI-tools/blob/master/doc/QUICK_START.md)
-6.  [Drop-seq\_tools-2.2.0](https://github.com/broadinstitute/Drop-seq/releases/tag/v2.2.0)
-7.  R version 3.5.3, or above.
-8.  Optional: [ChangePoint](https://sourceforge.net/projects/utr/files/), version 0.1.1
+### Files
 
-In case they are not already installed, the script automatically installs its required R packages. If you would like the packages to be installed in another library other than your default one (e.g. if you do not have permissions to install packages in this library), specify the path to the alternative library when running the script (-loc = path/to/Rlibrary/).
+-   Fasta and chromosome length files for human (hg19) or (and) mouse (mm10). Can be downloaded from [UCSC website](http://hgdownload.cse.ucsc.edu/goldenPath/mm10/bigZips/)
+
+### Tools
+
+-   [Samtools](http://www.htslib.org/download/) version 0.1.19-96b5f2294a or above.
+-   [Bedtools](https://bedtools.readthedocs.io/en/latest/content/installation.html) version v2.27.1-17-gf59480f or above.
+-   [Homer](http://homer.ucsd.edu/homer/introduction/install.html) version v4.8.3 or above. Uses Homer's "MakeTagdirectory" and "findPeaks".
+-   [UMI\_tools](https://github.com/CGATOxford/UMI-tools/blob/master/doc/QUICK_START.md)
+-   [Drop-seq\_tools-2.2.0](https://github.com/broadinstitute/Drop-seq/releases/tag/v2.2.0)
+-   R version 3.5.3, or above.
+-   Optional: [ChangePoint](https://sourceforge.net/projects/utr/files/), version 0.1.1
+
+### R packages
+
+-   Install the following: dplyr, plyr, tidyr, ggplot2, EnvStats, parallel, devtools, Rsubread (a Bioconductor packege).
+
+If the above packages are installed in a library other than your default R library, specify the path to the alternative library when running the script (-loc = path/to/Rlibrary/).
 
 Installing
 ==========
 
 -   Install all the above.
--   Install the R package devtools. In R:
-
-``` r
-install.packages("devtools")
-```
-
 -   Install scAPA package. In R:
 
 ``` r
@@ -34,14 +37,6 @@ devtools::install_github("ElkonLab/scAPA/scAPA")
 ```
 
 -   Install the package Rsubread:
-
-``` r
-if (!requireNamespace("BiocManager", quietly = TRUE)) {
-    install.packages("BiocManager")
-}
-if (!require("Rsubread", quietly = T)) BiocManager::install("Rsubread")
-```
-
 -   Download scAPA.shell.script folder. Or use:
 
 <!-- -->
@@ -97,17 +92,11 @@ By default, the script counts reads at a single-cell level. For faster analysis,
 Running the script on the example files with 30 cores, took approximately 14 hours. Bellow are estimated times (30 cores) for each step of the analysis:
 
 -   **Step 1a** PCR duplicates removal: ~2 hours and 30 minutes.
-
 -   **Step 1b** Peak detection: ~45 minetes
-
 -   **Step 1c** Separating Peaks: ~3 hours.
-
 -   **Step 2** Quantifying the usage of each peak: ~4 hours.
-
 -   **Step 3** Peak filtering: ~20 minutes.
-
 -   **Step 4** Statistical analysis: ~5 minutes.
-
 -   **Step 5** Inferring global trends: ~3 hours.
 
 Output Files
