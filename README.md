@@ -22,7 +22,7 @@ Prerequisites
 
 ### R packages
 
--   Install the following: dplyr, plyr, tidyr, ggplot2, EnvStats, parallel, devtools, Rsubread (a Bioconductor packege).
+-   Install the following: dplyr, plyr, tidyr, ggplot2, EnvStats, parallel, devtools, Rsubread (a Bioconductor package).
 
 If the above packages are installed in a library other than your default R library, specify the path to the alternative library when running the script (-loc = path/to/Rlibrary/).
 
