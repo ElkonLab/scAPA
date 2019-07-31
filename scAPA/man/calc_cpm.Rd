@@ -2,15 +2,15 @@
 % Please edit documentation in R/scAPAList.R
 \name{calc_cpm}
 \alias{calc_cpm}
-\title{Calculates the CPMs of the closter's peaks.}
+\title{Calculates the CPMs of the cluster's peaks.}
 \usage{
 calc_cpm(x)
 }
 \arguments{
-\item{x}{An scAPAList with a nonempty clust.count slot. 
+\item{x}{An scAPAList with a nonempty clust.count slot
 
 Normalized matrix is assigned to x@norm$CPM}
 }
 \description{
-Calculates the Counts per Milion (CPMs) of the closter's peaks.
+Calculates the Counts per Milion (CPMs) of the cluster's peaks.
 }
