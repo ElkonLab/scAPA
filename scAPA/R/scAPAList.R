@@ -812,6 +812,7 @@ setMethod("disply_results",
               out <- out[,-3]
               colnames(out)[7:8] <- c("p-value", "q-value")
             }
+            out
           })
 
 # Internal priming --------------------------------------------------------
