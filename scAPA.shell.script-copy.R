@@ -13,6 +13,7 @@ drop.seq.tools.path = "/home/ubuntu/Drop-seq_tools-2.2.0"
 char.length.path = paste0("/data/", org, ".chrom.sizes")
 fasta.path = paste0("/data/", org, ".fa")
 path.to.files = "/data/down.sampled.spermatogenesis"
+bedtools.path = "" #bedtools should be in path, no need to specify directory
 
 # Load R packages and function scripts------------------------------------------
 # This function load packages and install them in case they are not installed
@@ -41,18 +42,6 @@ if (!dir.exists("scAPA/outs")) dir.create("scAPA/outs")
 
 setwd(paste0(path.to.files, "/scAPA"))
 
-script.start.message <- paste0(Sys.time(),
-                                "\t Started scAPA.script.R.\n",
-                                "-p = ", path.to.files, "\n",
-                                "-org = ", org, "\n",
-                                "-c = ", c, "\n",
-                                "-cpm = ", CPM.cuttoff, "\n",
-                                "-a = ", A.number, "\n",
-                                "-u = ", filter.border.left, "\n",
-                                "-d = ", filter.border.right, "\n")
-
-write(x = script.start.message, file = "scAPA.script.log", append = F)
-
 # Our pipeline consists of the following 5 steps:
 # 1. Defining 3'UTR peaks
 #2. Quantifying the usage of each peak in each cell cluster
@@ -64,9 +53,6 @@ step = 1
 
 # 1.Defining 3'UTR peaks PCR duplicates removal ---------------------------
 # FilterBAM ---------------------------------------------------------------
-write_log_start("Stage 1: Defining 3'UTR peaks\n\n", command = NA)
-write_log_start("Stage 1a: PCR duplicates removal\n\n", command = NA)
-
 command <- paste0("for sample in ", samples, " ;", " do ",
                             drop.seq.tools.path, "FilterBam TAG_RETAIN=UB",
                             " I=../${sample}.bam O=./temp/UB.${sample}.bam &> ",
@@ -74,9 +60,6 @@ command <- paste0("for sample in ", samples, " ;", " do ",
 
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
-  
-write_log_start("FilterBAM", command = command)
-write_log(stage = "FilterBAM")
 
 # ii. Use UMI tools with “method=unique” so that cellranger corrected molecular barcodes are used
 
@@ -87,8 +70,6 @@ command <- paste0("for sample in ", samples, " ; do ",
 
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
-  
-write_log_start("samtools index", command = command)
 
 # umi_tools ---------------------------------------------------------------
 command <- paste0("for sample in ", samples, " ;do ",
@@ -102,14 +83,11 @@ command <- paste0("for sample in ", samples, " ;do ",
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
 
-write_log_start("umi_tools,", command = command)
-
 command = "rm temp/UB.*.bam*"
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
 
 # Peak detection -------------------------------------------------------
-write_log_start("Stage 1b: Peak detection\n\n", command = NA)
 
 # makeTagDirectory --------------------------------------------------------
 command <- paste0("makeTagDirectory ./temp/Tagdirectory ",
@@ -119,8 +97,6 @@ command <- paste0("makeTagDirectory ./temp/Tagdirectory ",
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
 
-write_log_start("makeTagDirectory", command = command)
-
 # # findPeaks ---------------------------------------------------------------
 command <- paste0("findPeaks ./temp/Tagdirectory -size 50 -frag",
                   "Length 100 -minDist 1 -strand separate -o ",
@@ -129,8 +105,6 @@ command <- paste0("findPeaks ./temp/Tagdirectory -size 50 -frag",
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
 
-write_log_start("findPeaks,", command = command)
-write_log(stage = "findPeaks")
 
 #RUN SHELL SCRIPTS BEFORE RUNNING NEXT STEPS
 
@@ -143,21 +117,16 @@ peaks.bed <- intersect_peaks(org = org, bed.name = "./merge.peakfile.bed",
 write.bed(.x = peaks.bed, f = "./peaks.bed")
 
 # Spliting bimodal peaks --------------------------------------------------
-write_log_start(paste0("Stage 1c: Separating Peaks with bimodal UMI",
-                       " counts distribution\n\n"), command = NA,
-                f = "../scAPA.script.log")
 
 # Samtools merge
 dedup.bams <- paste0("dedup.", bams.files, collapse = " ")
-command <- paste0(samtools.path, "samtools merge merged.bam ",
-                                dedup.bams,
-                                " &> ../Log.files/samtoolsmerge.out")
+command <- paste0("samtools merge merged.bam ",
+                  dedup.bams,
+                  " &> ../Log.files/samtoolsmerge.out")
 
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
 
-write_log_start(f = "../scAPA.script.log", "samtools merge", command=command)
-write_log(f = "../scAPA.script.log", stage = "samtools merge")
 
 # Bedgraphs
 command <- paste0(bedtools.path,
@@ -194,9 +163,6 @@ peaks.wig <- read.delim(file = "intersected.wig", header = F)
 peaks.wig <- split(x = peaks.wig, f = peaks.wig$V10, drop = T)
 
 # mclust
-mclust.command <- paste0("Mclust()")
-write_log_start(f = "../scAPA.script.log", "Mclust,", command = mclust.command)
-
 if(c > 1){
 bed <- plyr::rbind.fill(parallel::mclapply(1:length(peaks.wig),
                                            FUN = creat_mclus,
@@ -214,8 +180,6 @@ if (!exists("bed")) {
     write_log(f = "../scAPA.script.log", stage = "Mclust", success = F)
     stop("Mclust did not end, shell script did NOT end!")
 }
-
-write_log(f = "../scAPA.script.log", stage = "Mclust")
 
 command = "rm intersected.wig merged.wig"
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
@@ -248,14 +212,6 @@ for (j in 1:length(samples.vector)) {
         
         write(command, paste0(path.to.files, "/scAPA/", "step", step, "_", tagValuefile, ".sh"))
         step = step+1
-        
-        write_log_start(f = "../scAPA.script.log",
-                        paste0("FilterBAMbyTag for ", tagValuefile),
-                        command = command)
-
-        write_log(f = "../scAPA.script.log",
-                  stage = paste0("FilterBAMbyTag.command: ",
-                                 sample, "_", cluster, ".bam"))
     }
 }
 
@@ -269,19 +225,10 @@ for (i in 1:length(clusters)) {
                                      ".bam ", bams.to.merge)
     write(command, paste0(path.to.files, "/scAPA/", "step", step, "_", clusters[i], ".sh"))
     step = step+1
-    
-    write_log_start(f = "../scAPA.script.log",
-                    paste0("samtools merge for ", clusters[i]),
-                    command = command)
-
-    write_log(f = "../scAPA.script.log",
-              stage = paste0("samtools merge for ", clusters[i]))
 }
 
 #RUN SHELL SCRIPTS BEFORE RUNNING NEXT STEPS
 
-write_log_start(f = "../scAPA.script.log", "featureCounts for 3UTRs",
-                command = NA)
 bam.cluster.files <- paste0(clusters, ".bam")
 counts <- Rsubread::featureCounts(files = bam.cluster.files, isGTFAnnotationFile = F,
                         strandSpecific = 1, annot.ext = utr.saf,
@@ -296,12 +243,8 @@ metadata <- read_down.seq(saf = utr.saf,
 aseq <- metadata[, c(4, 6)]
 a <- set_scAPAList(.clus.counts = co, .row.Data = meta, .down.seq = aseq)
 saveRDS(object = a, file = "../outs/Peaks.RDS")
-write_log(f = "../scAPA.script.log", stage = "featureCounts for 3UTRs")
 
 # Peak filtering ----------------------------------------------------------
-write_log_start("Stage 3: Peak filtering (3'UTRs)\n\n",
-                command = NA, f = "../scAPA.script.log")
-
 a <- calc_cpm(a)
 keep.cpm <- rowSums(a@norm$CPM) > CPM.cuttoff
 a.fil <- a[keep.cpm, ]
@@ -312,8 +255,6 @@ a.fil <- filter_IP(x = a.fil, int.priming.seq = IP.seq,
                    left = filter.border.left, right = filter.border.right)
 
 # Statistical analysis ----------------------------------------------------
-write_log_start("Stage 4: Statistical analysis (3'UTRs)\n\n",
-                command = NA, f = "../scAPA.script.log")
 results <- set_scAPAresults(a.fil)
 # Chi-squre test for APA
 results <- test_APA(results, clus = "all")
@@ -322,8 +263,6 @@ results <- test_APA(results, clus = "all")
 results <- test_peaks(results, clus = "all", sig.level = 0.05)
 
 # Inferring global trends -------------------------------------------------
-write_log_start("Stage 5: Inferring global trends  (3'UTRs)\n\n", command = NA,
-                f = "../scAPA.script.log")
 results <- calc_pAi_mat(results)
 results <- calc_p_pui_mat(results)
 saveRDS(object = results, file = "../outs/results.RDS")
