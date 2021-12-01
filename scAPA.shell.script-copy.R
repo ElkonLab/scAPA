@@ -8,9 +8,11 @@ IA.number = 7
 Ifilter.border.left = 1
 Ifilter.border.right = 200
 IC.cuttoff = 50
+org = "mm10"
 drop.seq.tools.path = "/home/ubuntu/Drop-seq_tools-2.2.0"
-char.length.path = "/data/mm10.chrom.sizes"
-fasta.path = "/data/mm10.fa"
+char.length.path = paste0("/data/", org, ".chrom.sizes")
+fasta.path = paste0("/data/", org, ".fa")
+path.to.files = "/data/down.sampled.spermatogenesis"
 
 # Load R packages and function scripts------------------------------------------
 # This function load packages and install them in case they are not installed
@@ -44,11 +46,6 @@ script.start.message <- paste0(Sys.time(),
                                 "-p = ", path.to.files, "\n",
                                 "-org = ", org, "\n",
                                 "-c = ", c, "\n",
-                                "-sp = ", path.to.config, "\n",
-                                "-sc = ", sc, "\n",
-                                "-int = ", int, "\n",
-                                "-wig = ", wig, "\n",
-                                "-ChangePoint = ", ChangePoint, "\n",
                                 "-cpm = ", CPM.cuttoff, "\n",
                                 "-a = ", A.number, "\n",
                                 "-u = ", filter.border.left, "\n",
@@ -70,10 +67,10 @@ step = 1
 write_log_start("Stage 1: Defining 3'UTR peaks\n\n", command = NA)
 write_log_start("Stage 1a: PCR duplicates removal\n\n", command = NA)
 
-command <- paste0("sh -c 'for sample in ", samples, " ;", " do ",
+command <- paste0("for sample in ", samples, " ;", " do ",
                             drop.seq.tools.path, "FilterBam TAG_RETAIN=UB",
                             " I=../${sample}.bam O=./temp/UB.${sample}.bam &> ",
-                            "./Log.files/FilterBAM.${sample}.bam.out; done'")
+                            "./Log.files/FilterBAM.${sample}.bam.out; done")
 
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
@@ -84,10 +81,9 @@ write_log(stage = "FilterBAM")
 # ii. Use UMI tools with “method=unique” so that cellranger corrected molecular barcodes are used
 
 # samtools index ----------------------------------------------------------
-command <- paste0("sh -c 'for sample in ", samples, " ; do ",
-                        samtools.path,
+command <- paste0("for sample in ", samples, " ; do ",
                         "samtools index temp/UB.${sample}.bam",
-                        " &> ./Log.files/Index.${sample}.out; done'")
+                        " &> ./Log.files/Index.${sample}.out; done")
 
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
@@ -96,7 +92,7 @@ write_log_start("samtools index", command = command)
 
 # umi_tools ---------------------------------------------------------------
 command <- paste0("for sample in ", samples, " ;do ",
-                  umi_tools.path, "umi_tools dedup -I ",
+                  "umi_tools dedup -I ",
                   "temp/UB.${sample}.bam -S temp/dedup.${sample}.bam",
                    " --method=unique --extract-umi-method=tag ",
                    "--umi-tag=UB --cell-tag=CB > ",
@@ -108,7 +104,6 @@ step = step+1
 
 write_log_start("umi_tools,", command = command)
 
-
 command = "rm temp/UB.*.bam*"
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
@@ -117,7 +112,7 @@ step = step+1
 write_log_start("Stage 1b: Peak detection\n\n", command = NA)
 
 # makeTagDirectory --------------------------------------------------------
-command <- paste0(homer.path,"makeTagDirectory ./temp/Tagdirectory ",
+command <- paste0("makeTagDirectory ./temp/Tagdirectory ",
                   "./temp/dedup.* &> ./Log.files/",
                   "makeTagDirectory.out")
 
@@ -127,10 +122,9 @@ step = step+1
 write_log_start("makeTagDirectory", command = command)
 
 # # findPeaks ---------------------------------------------------------------
-command <- paste0(homer.path,
-                            "findPeaks ./temp/Tagdirectory -size 50 -frag",
-                            "Length 100 -minDist 1 -strand separate -o ",
-                            "./temp/Peakfile &> ./Log.files/findPeaks.out")
+command <- paste0("findPeaks ./temp/Tagdirectory -size 50 -frag",
+                  "Length 100 -minDist 1 -strand separate -o ",
+                  "./temp/Peakfile &> ./Log.files/findPeaks.out")
 
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
