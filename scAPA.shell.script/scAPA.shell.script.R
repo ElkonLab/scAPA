@@ -117,7 +117,7 @@ wig <- read_args(arg.string = "-wig", defult = "false",
                  arg = script.args)
 wig <- ifelse(wig == "true", TRUE, FALSE)
 loc <- read_args(arg.string = "-loc", defult = "false", arg = script.args)
-loc <- ifelse(wig == "false", NULL, loc)
+loc <- ifelse(loc == "false", NULL, loc)
 
 # Read in configuration file ----------------------------------------------
 setwd(path.to.config)
