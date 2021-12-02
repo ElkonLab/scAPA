@@ -1,4 +1,4 @@
-c = 30
+c = 15
 CPM.cuttoff = 10
 A.number = 8
 filter.border.left = 10
@@ -8,10 +8,10 @@ IA.number = 7
 Ifilter.border.left = 1
 Ifilter.border.right = 200
 IC.cuttoff = 50
-org = "mm10"
-drop.seq.tools.path = "/home/ubuntu/Drop-seq_tools-2.2.0"
-char.length.path = paste0("/data/", org, ".chrom.sizes")
-fasta.path = paste0("/data/", org, ".fa")
+org = "Mm"
+drop.seq.tools.path = "/home/ubuntu/Drop-seq_tools-2.2.0/"
+char.length.path = "/data/mm10.chrom.sizes"
+fasta.path = "/data/mm10.fa"
 path.to.files = "/data/down.sampled.spermatogenesis"
 bedtools.path = "" #bedtools should be in path, no need to specify directory
 
@@ -119,10 +119,10 @@ write.bed(.x = peaks.bed, f = "./peaks.bed")
 # Spliting bimodal peaks --------------------------------------------------
 
 # Samtools merge
-dedup.bams <- paste0("dedup.", bams.files, collapse = " ")
-command <- paste0("samtools merge merged.bam ",
+dedup.bams <- paste0("temp/", "dedup.", bams.files, collapse = " ")
+command <- paste0("samtools merge temp/merged.bam ",
                   dedup.bams,
-                  " &> ../Log.files/samtoolsmerge.out")
+                  " &> Log.files/samtoolsmerge.out")
 
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
@@ -130,30 +130,30 @@ step = step+1
 
 # Bedgraphs
 command <- paste0(bedtools.path,
-                           "bedtools genomecov -ibam merged.bam ",
+                           "bedtools genomecov -ibam temp/merged.bam ",
                            "-bg -strand + | awk 'BEGIN ",
                            "{OFS = \"\t\"}{print $1",
-                           ", $2, $3, $4, \".\", \"+\"}' > merged.wig")
+                           ", $2, $3, $4, \".\", \"+\"}' > temp/merged.wig")
 
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
 
-command <- paste0(bedtools.path, "bedtools genomecov -ibam merged.bam ",
+command <- paste0(bedtools.path, "bedtools genomecov -ibam temp/merged.bam ",
                             "-bg -strand - | awk 'BEGIN {OFS = \"\t\"}{print $1",
-                            ", $2, $3, $4, \".\", \"-\"}' >> merged.wig")
+                            ", $2, $3, $4, \".\", \"-\"}' >> temp/merged.wig")
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
 
-command = "rm merged.bam"
+command = "rm temp/merged.bam"
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
 
 command <- paste0(bedtools.path, "bedtools intersect -s -wb ",
-                                "-b peaks.bed -a merged.wig > intersected.wig")
+                                "-b temp/peaks.bed -a temp/merged.wig > temp/intersected.wig")
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
 
-command = "rm merged.wig"
+command = "rm temp/merged.wig"
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
 
@@ -181,7 +181,7 @@ if (!exists("bed")) {
     stop("Mclust did not end, shell script did NOT end!")
 }
 
-command = "rm intersected.wig merged.wig"
+command = "rm temp/intersected.wig"
 write(command, paste0(path.to.files, "/scAPA/", "step", step, ".sh"))
 step = step+1
 
@@ -190,7 +190,8 @@ step = step+1
 allclusters <- character()
 for (j in 1:length(samples.vector)) {
     sample <- samples.vector[j]
-    list.file <- paste0("../../clusters_", sample, ".txt")
+    sample_prefix = strsplit(sample, "-")[[1]][1]
+    list.file <- paste0("../../clusters_", sample_prefix, ".txt")
     list.cells <- read.delim(file = list.file, header = F)
     list.cells[, 1] <- as.character(list.cells[, 1])
     list.cells <- split(x = list.cells, f = list.cells[, 2], drop = T)
@@ -202,33 +203,36 @@ for (j in 1:length(samples.vector)) {
         write.bed(.x = cluster.cells, f = tagValuefile)
         command <- paste0(drop.seq.tools.path,
                                          "FilterBamByTag ",
-                                         "TAG=CB I=dedup.",
-                                         sample, ".bam O=",
+                                         "TAG=CB I=temp/dedup.",
+                                         sample, ".bam O=temp/",
                                          sample, "_", cluster, ".bam ",
-                                         "TAG_VALUES_FILE=", tagValuefile,
-                                         " &> ../Log.files/",
+                                         "TAG_VALUES_FILE=temp/", tagValuefile,
+                                         " &> Log.files/",
                                          "FilterBamByTag_",
             tagValuefile)
         
         write(command, paste0(path.to.files, "/scAPA/", "step", step, "_", tagValuefile, ".sh"))
-        step = step+1
     }
 }
+
+step = step+1
 
 #RUN SHELL SCRIPTS BEFORE RUNNING NEXT STEPS
 
 clusters <- unique(allclusters)
 for (i in 1:length(clusters)) {
-    bams.to.merge <- paste0(samples.vector, "_", clusters[i], ".bam",
+    bams.to.merge <- paste0("temp/", samples.vector, "_", clusters[i], ".bam",
                             collapse = " ")
-    command <- paste0("samtools merge ", clusters[i],
+    command <- paste0("samtools merge temp/", clusters[i],
                                      ".bam ", bams.to.merge)
     write(command, paste0(path.to.files, "/scAPA/", "step", step, "_", clusters[i], ".sh"))
-    step = step+1
 }
+step = step+1
 
 #RUN SHELL SCRIPTS BEFORE RUNNING NEXT STEPS
 
+utr.saf <- bed[, c(4, 1, 2, 3, 6)]
+colnames(utr.saf) <- c("GeneID", "Chr", "Start", "End", "Strand")
 bam.cluster.files <- paste0(clusters, ".bam")
 counts <- Rsubread::featureCounts(files = bam.cluster.files, isGTFAnnotationFile = F,
                         strandSpecific = 1, annot.ext = utr.saf,
@@ -301,5 +305,4 @@ p <- p + ggplot2::stat_ecdf(size = 1)
 p <- p + ggplot2::theme_bw()
 p <- p + ggplot2::xlab("Proximal peak usage index")
 p <- p + ggplot2::ylab("Cumulative fraction")
-print(p)
 dev.off()
